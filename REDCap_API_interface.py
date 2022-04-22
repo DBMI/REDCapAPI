@@ -1,5 +1,6 @@
 import configparser
 import json
+import os
 import pandas as pd
 import requests
 from utilities import convert_to_date
@@ -7,16 +8,14 @@ from utilities import convert_to_date
 
 class REDCapInterface:
     def __init__(self, isdev=False):
-        config = configparser.ConfigParser()
-
-        if isdev:
-            config.read('config-dev.env')
-        else:
-            config.read('config.env')
-
-        self.API_URL = config.get('API', 'API_URL')
-        self.CAPMC_TOKEN = config.get('CAPMC', 'CAPMC_TOKEN')
+        self.API_URL = None
+        self.CAPMC_TOKEN = None
         self.RECORDS_PER_PAYLOAD = 100
+
+        self.read_environment_variables(isdev)
+
+        if self.API_URL is None or self.CAPMC_TOKEN is None:
+            self.read_config_file(isdev)
 
     @staticmethod
     def build_data_payload(study_id, dob, pcd, cpd, dla):
@@ -139,6 +138,25 @@ class REDCapInterface:
 
             r = requests.post(self.API_URL, data=fields)
             return r is not None and r.status_code == 200
+
+    def read_config_file(self, isdev=False):
+        config = configparser.ConfigParser()
+
+        if isdev:
+            config.read('config-dev.env')
+        else:
+            config.read('config.env')
+
+        self.API_URL = config.get('API', 'API_URL')
+        self.CAPMC_TOKEN = config.get('CAPMC', 'CAPMC_TOKEN')
+
+    def read_environment_variables(self, isdev=False):
+        if isdev:
+            self.API_URL = os.getenv('API_URL_DEV')
+            self.CAPMC_TOKEN = os.getenv('CAPMC_TOKEN_DEV')
+        else:
+            self.API_URL = os.getenv('API_URL')
+            self.CAPMC_TOKEN = os.getenv('CAPMC_TOKEN')
 
     def retrieve(self, record_numbers=None):
         if record_numbers:
