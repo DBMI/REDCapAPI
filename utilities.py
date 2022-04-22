@@ -3,7 +3,8 @@ import re
 
 
 def convert_to_date(date_string):
-    date_string = date_string.strip().replace(r" [\d]{2}:[\d]{2}:[\d]{2}", "")
+    # Remove leading/trailing whitespace.
+    date_string = date_string.strip().replace(r" [\d]{2}:[\d]{2}:[\d]{2}", "").strip()
 
     if date_string == "":
         return None
