@@ -1,7 +1,8 @@
 import pandas as pd
+from datetime import datetime
 from unittest import TestCase
 from REDCap_API_interface import REDCapInterface
-
+from utilities import convert_to_date
 
 class TestREDCap(TestCase):
     def test_object_instantiation(self):
@@ -39,3 +40,39 @@ class TestREDCap(TestCase):
         num_elements_returned: int = df.shape[0]
         message = f"Expected many elements in dataframe but received {num_elements_returned}."
         self.assertGreater(num_elements_returned, 2, message)
+
+    def test_date_conversion(self):
+        date_value_true = datetime.strptime("31/01/1970", "%d/%m/%Y")
+        datetime_value_true = datetime.strptime("31/01/1970 12:05:10", "%d/%m/%Y %H:%M:%S")
+
+        date_string_test = '01/31/1970'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
+        date_string_test = '01/31/70'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
+        date_string_test = '01-31-1970'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
+        date_string_test = '01-31-70'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
+        date_string_test = '1970-01-31 12:05:10'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, datetime_value_true)
+
+        date_string_test = '1970-01-31'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
+        date_string_test = '31 Jan 1970'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
+        date_string_test = 'Jan 31 1970 12:00AM'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
