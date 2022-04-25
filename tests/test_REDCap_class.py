@@ -73,6 +73,14 @@ class TestREDCap(TestCase):
         date_string_converted = convert_to_date(date_string_test)
         self.assertEqual(date_string_converted, date_value_true)
 
+        date_string_test = 'Jan 31 1970'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
+        date_string_test = 'Jan 31, 1970'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
         date_string_test = 'Jan 31 1970 12:00AM'
         date_string_converted = convert_to_date(date_string_test)
         self.assertEqual(date_string_converted, date_value_true)
