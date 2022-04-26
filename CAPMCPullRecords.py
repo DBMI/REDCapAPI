@@ -2,7 +2,6 @@
 
 import configparser
 from datetime import datetime
-import numpy as np
 import pandas as pd
 import re
 import requests
