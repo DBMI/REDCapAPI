@@ -6,7 +6,8 @@ from utilities import convert_to_date
 
 class TestREDCap(TestCase):
     def test_object_instantiation(self):
-        redcap_interface_object = REDCapInterface(False)
+        #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
+        redcap_interface_object = REDCapInterface(True)
         message = "Unable to instantiate a REDCapInterface object."
         self.assertIsInstance(redcap_interface_object, REDCapInterface, message)
 
@@ -15,7 +16,7 @@ class TestREDCap(TestCase):
         pass
 
     def test_single_record_retrieval(self):
-        redcap_interface_object = REDCapInterface(False)
+        redcap_interface_object = REDCapInterface(True)
         df = redcap_interface_object.retrieve(6345949)
         message = "Unable to retrieve data frame from REDCap."
         self.assertIsInstance(df, pd.DataFrame, message)
@@ -24,7 +25,7 @@ class TestREDCap(TestCase):
         self.assertEqual(num_elements_returned, 1, message)
 
     def test_multiple_record_retrieval(self):
-        redcap_interface_object = REDCapInterface(False)
+        redcap_interface_object = REDCapInterface(True)
         df = redcap_interface_object.retrieve([6345966, 6345949])
         message = "Unable to retrieve data frame from REDCap."
         self.assertIsInstance(df, pd.DataFrame, message)
@@ -33,7 +34,7 @@ class TestREDCap(TestCase):
         self.assertEqual(num_elements_returned, 2, message)
 
     def test_bulk_record_retrieval(self):
-        redcap_interface_object = REDCapInterface(False)
+        redcap_interface_object = REDCapInterface(True)
         df = redcap_interface_object.retrieve()
         message = "Unable to retrieve data frame from REDCap."
         self.assertIsInstance(df, pd.DataFrame, message)

@@ -7,15 +7,22 @@ from utilities import convert_to_date
 
 
 class REDCapInterface:
-    def __init__(self, isdev=False):
+    def __init__(self, _isdev=False):
         self.API_URL = None
         self.CAPMC_TOKEN = None
         self.RECORDS_PER_PAYLOAD = 100
+        self.isdev = _isdev
 
-        self.read_environment_variables(isdev)
+        self.read_environment_variables()
 
         if self.API_URL is None or self.CAPMC_TOKEN is None:
-            self.read_config_file(isdev)
+            self.read_config_file()
+
+        if self.isdev and not self.known_test_record_present:
+            raise Exception("WARNING! Unable to find known test record. You might not be connected to the DEV database.")
+
+        # Lets all methods know that we're talking to the correct database.
+        self.valid = True
 
     @staticmethod
     def build_data_payload(study_id, dob, pcd, cpd, dla):
@@ -37,7 +44,7 @@ class REDCapInterface:
 
             return payload_entry
 
-    def build_data_pull(self, record_numbers=None):
+    def build_data_pull(self, record_numbers=None, expanded_record=False):
         pull_dict = {
             'token': self.CAPMC_TOKEN,
             'content': 'record',
@@ -57,6 +64,14 @@ class REDCapInterface:
             'returnFormat': 'json'
         }
 
+        # For now, don't allow use of expanded record unless we're in DEV mode.
+        #  The method known_test_record_present() needs
+        #  the first/last name of a particular dummy record to be sure we're
+        #  connected to the DEV database.
+        if self.isdev and expanded_record:
+            pull_dict['fields[5]'] = 'first_name'
+            pull_dict['fields[6]'] = 'last_name'
+
         if record_numbers:
             # Insert into the dictionary a key for each desired record number.
             record_count = 0
@@ -69,6 +84,10 @@ class REDCapInterface:
         return pull_dict
 
     def create(self, data_records):
+
+        if not self.valid:
+            return
+
         count_total = 0
         count_with_dates = 0
         payload = []
@@ -87,7 +106,7 @@ class REDCapInterface:
                 if count_with_dates % self.RECORDS_PER_PAYLOAD == 1:
                     payload = "[" + payload_entry + ", "
                 elif (count_with_dates % self.RECORDS_PER_PAYLOAD == 0) or \
-                     (count_total == data_records.shape[0]):
+                        (count_total == data_records.shape[0]):
                     # Finish up this chunk of records.
                     payload = payload + payload_entry + "]"
 
@@ -113,6 +132,10 @@ class REDCapInterface:
                     payload = payload + payload_entry + ", "
 
     def delete(self, record_number):
+
+        if not self.valid:
+            return
+
         if record_number:
             fields = {
                 'token': self.CAPMC_TOKEN,
@@ -125,6 +148,10 @@ class REDCapInterface:
             return r is not None and r.status_code == 200
 
     def insert(self, new_data_record=None):
+
+        if not self.valid:
+            return
+
         if new_data_record:
             data = json.dumps([new_data_record])
 
@@ -139,10 +166,21 @@ class REDCapInterface:
             r = requests.post(self.API_URL, data=fields)
             return r is not None and r.status_code == 200
 
-    def read_config_file(self, isdev=False):
+    # Check for the presence of a known test record to be doubly sure we're connected to DEV_CAPMC_RECRUITMENT.
+    def known_test_record_present(self):
+        test_record_number = 6393740
+        record = self.retrieve(test_record_number, expanded_record=True)
+
+        if record is None or not isinstance(record, pd.DataFrame) \
+                or 'first_name' not in record or 'last_name' not in record:
+            raise Exception("Unable to retrieve known test record. You might not be connected to the DEV database.")
+
+        return record.iloc[0].first_name == 'TESTER' and record.iloc[0].last_name == 'TESTDATA'
+
+    def read_config_file(self):
         config = configparser.ConfigParser()
 
-        if isdev:
+        if self.isdev:
             config.read('config-dev.env')
         else:
             config.read('config.env')
@@ -150,22 +188,23 @@ class REDCapInterface:
         self.API_URL = config.get('API', 'API_URL')
         self.CAPMC_TOKEN = config.get('CAPMC', 'CAPMC_TOKEN')
 
-    def read_environment_variables(self, isdev=False):
-        if isdev:
+    def read_environment_variables(self):
+        if self.isdev:
             self.API_URL = os.getenv('API_URL_DEV')
             self.CAPMC_TOKEN = os.getenv('CAPMC_TOKEN_DEV')
         else:
             self.API_URL = os.getenv('API_URL')
             self.CAPMC_TOKEN = os.getenv('CAPMC_TOKEN')
 
-    def retrieve(self, record_numbers=None):
+    def retrieve(self, record_numbers=None, expanded_record=False):
+        # No need to check for self.valid here; it's always OK to retrieve records.
         if record_numbers:
             if isinstance(record_numbers, int):
                 record_numbers = [record_numbers]
             elif not isinstance(record_numbers, list):
                 return []
 
-        data_pull = self.build_data_pull(record_numbers)
+        data_pull = self.build_data_pull(record_numbers, expanded_record=expanded_record)
         r = requests.post(self.API_URL, data=data_pull, verify=True)
 
         if not r or r.status_code != 200:
@@ -181,6 +220,10 @@ class REDCapInterface:
         return dates_df
 
     def update(self, new_data_records=None):
+
+        if not self.valid:
+            return
+
         for new_data_record in new_data_records:
             # Get a copy of what's there now.
             record_number = new_data_record['record']
