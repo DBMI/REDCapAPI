@@ -3,7 +3,6 @@ import json
 import os
 import pandas as pd
 import requests
-from utilities import convert_to_date
 
 
 class REDCapInterface:
@@ -12,50 +11,22 @@ class REDCapInterface:
         self.CAPMC_TOKEN = None
         self.RECORDS_PER_PAYLOAD = 100
         self.isdev = _isdev
+        self._read_config_file()
 
-        self.read_environment_variables()
-
-        if self.API_URL is None or self.CAPMC_TOKEN is None:
-            self.read_config_file()
-
-        if self.isdev and not self.known_test_record_present:
+        if self.isdev and not self._known_test_record_present:
             raise Exception("WARNING! Unable to find known test record. You might not be connected to the DEV database.")
 
         # Lets all methods know that we're talking to the correct database.
         self.valid = True
 
-    @staticmethod
-    def build_data_payload(study_id, dob, pcd, cpd, dla):
-        # BUILD A SINGLE JSON ENTRY FOR THE PAYLOAD OBJECT
-        if dob is None and pcd is None and cpd is None and dla is None:
-            return ""
-        else:
-            payload_entry = "{\"study_id\":" + study_id
-
-            if dob is not None:
-                payload_entry = payload_entry + ",\"dob_2\":\"" + dob.strftime("%Y-%m-%d") + "\""
-            if pcd is not None:
-                payload_entry = payload_entry + ",\"primary_consent_date_2\":\"" + pcd.strftime("%Y-%m-%d") + "\""
-            if cpd is not None:
-                payload_entry = payload_entry + ",\"core_participant_date_2\":\"" + cpd.strftime("%Y-%m-%d") + "\""
-            if dla is not None:
-                payload_entry = payload_entry + ",\"date_of_last_activity_2\":\"" + dla.strftime("%Y-%m-%d") + "\""
-            payload_entry = payload_entry + "}"
-
-            return payload_entry
-
-    def build_data_pull(self, record_numbers=None, expanded_record=False):
+    def _build_data_pull(self, record_numbers=None, expanded_record=False):
+        # NOT specifying the "fields" list ==> give me ALL the fields.
         pull_dict = {
             'token': self.CAPMC_TOKEN,
             'content': 'record',
             'format': 'json',
             'type': 'flat',
             'csvDelimiter': '',
-            'fields[0]': 'study_id',
-            'fields[1]': 'dob',
-            'fields[2]': 'primary_consent_date',
-            'fields[3]': 'core_participant_date',
-            'fields[4]': 'date_of_last_activity',
             'rawOrLabel': 'raw',
             'rawOrLabelHeaders': 'raw',
             'exportCheckboxLabel': 'false',
@@ -64,13 +35,14 @@ class REDCapInterface:
             'returnFormat': 'json'
         }
 
-        # For now, don't allow use of expanded record unless we're in DEV mode.
-        #  The method known_test_record_present() needs
-        #  the first/last name of a particular dummy record to be sure we're
-        #  connected to the DEV database.
-        if self.isdev and expanded_record:
-            pull_dict['fields[5]'] = 'first_name'
-            pull_dict['fields[6]'] = 'last_name'
+        # For now, restrict the fields to just this list
+        #  ->unless<- we're in DEV mode AND "expanded_record" selected.
+        if not self.isdev or not expanded_record:
+            pull_dict['fields[0]'] = 'study_id',
+            pull_dict['fields[1]'] = 'dob',
+            pull_dict['fields[2]'] = 'primary_consent_date',
+            pull_dict['fields[3]'] = 'core_participant_date',
+            pull_dict['fields[4]'] = 'date_of_last_activity',
 
         if record_numbers:
             # Insert into the dictionary a key for each desired record number.
@@ -84,57 +56,38 @@ class REDCapInterface:
         return pull_dict
 
     def create(self, data_records):
-
         if not self.valid:
-            return
+            return None
 
-        count_total = 0
-        count_with_dates = 0
-        payload = []
+        if data_records is None:
+            return None
 
-        for i in data_records.index:
-            count_total += 1
-            dob = convert_to_date(data_records['dob'][i])
-            pcd = convert_to_date(data_records['primary_consent_date'][i])
-            cpd = convert_to_date(data_records['core_participant_date'][i])
-            dla = convert_to_date(data_records['date_of_last_activity'][i])
-            payload_entry = self.build_data_payload(data_records['study_id'][i], dob, pcd, cpd, dla)
+        if isinstance(data_records, dict):
+            data_records = [data_records]
+        elif isinstance(data_records, list):
+            if len(data_records) == 1:
+                data_records = [data_records]
+        elif isinstance(data_records, pd.DataFrame):
+            data_records = data_records.to_dict('records')
+        else:
+            return False
 
-            if payload_entry != "":
-                count_with_dates += 1
+        data = json.dumps(data_records)
 
-                if count_with_dates % self.RECORDS_PER_PAYLOAD == 1:
-                    payload = "[" + payload_entry + ", "
-                elif (count_with_dates % self.RECORDS_PER_PAYLOAD == 0) or \
-                        (count_total == data_records.shape[0]):
-                    # Finish up this chunk of records.
-                    payload = payload + payload_entry + "]"
+        fields = {
+            'token': self.CAPMC_TOKEN,
+            'content': 'record',
+            'format': 'json',
+            'type': 'flat',
+            'data': data,
+        }
 
-                    # Wrap with token.
-                    data_push = {
-                        'token': self.CAPMC_TOKEN,
-                        'content': 'record',
-                        'format': 'json',
-                        'type': 'flat',
-                        'overwriteBehavior': 'normal',
-                        'data': payload,
-                        'returnContent': 'count',
-                        'returnFormat': 'json'
-                    }
-
-                    # Send off to the API.
-                    r = requests.post(self.API_URL, data=data_push, verify=True)
-
-                    if not r or r.status_code != 200:
-                        raise Exception("Unable to post records to REDCap API.")
-
-                else:
-                    payload = payload + payload_entry + ", "
+        r = requests.post(self.API_URL, data=fields)
+        return r is not None and r.status_code == 200
 
     def delete(self, record_number):
-
         if not self.valid:
-            return
+            return None
 
         if record_number:
             fields = {
@@ -147,27 +100,27 @@ class REDCapInterface:
             r = requests.post(self.API_URL, data=fields)
             return r is not None and r.status_code == 200
 
-    def insert(self, new_data_record=None):
-
+    def exists(self, record_number=None):
         if not self.valid:
-            return
+            return None
 
-        if new_data_record:
-            data = json.dumps([new_data_record])
+        if record_number:
+            if isinstance(record_number, int):
+                data_pull = self._build_data_pull([record_number])
+            elif not isinstance(record_number, list):
+                raise Exception("Input 'record_number' is neither int nor list.")
 
-            fields = {
-                'token': self.CAPMC_TOKEN,
-                'content': 'record',
-                'format': 'json',
-                'type': 'flat',
-                'data': data,
-            }
+            r = requests.post(self.API_URL, data=data_pull, verify=True)
 
-            r = requests.post(self.API_URL, data=fields)
-            return r is not None and r.status_code == 200
+            try:
+                return r.status_code == 200
+            except NameError:
+                return False
+        else:
+            return False
 
     # Check for the presence of a known test record to be doubly sure we're connected to DEV_CAPMC_RECRUITMENT.
-    def known_test_record_present(self):
+    def _known_test_record_present(self):
         test_record_number = 6393740
         record = self.retrieve(test_record_number, expanded_record=True)
 
@@ -177,24 +130,42 @@ class REDCapInterface:
 
         return record.iloc[0].first_name == 'TESTER' and record.iloc[0].last_name == 'TESTDATA'
 
-    def read_config_file(self):
+    def last_record_number(self, except_for=None):
+        last_valid_record_number = self.next_record_number() - 1
+
+        while not self.exists(last_valid_record_number)\
+                and last_valid_record_number > 0\
+                and last_valid_record_number != except_for:
+            last_valid_record_number -= 1
+
+        return last_valid_record_number
+
+    def next_record_number(self):
+        fields = {
+            'token': self.CAPMC_TOKEN,
+            'content': 'generateNextRecordName',
+        }
+
+        r = requests.post(self.API_URL, data=fields)
+
+        if r is None or r.status_code != 200:
+            raise Exception("Unable to query for next record number.")
+
+        try:
+            return int(r.text)
+        except TypeError:
+            raise Exception("Unable to parse next record number.")
+
+    def _read_config_file(self):
         config = configparser.ConfigParser()
 
         if self.isdev:
-            config.read('config-dev.env')
+            config.read('F:\RedCap\secrets\config-dev.key')
         else:
-            config.read('config.env')
+            config.read('F:\RedCap\secrets\config.key')
 
         self.API_URL = config.get('API', 'API_URL')
         self.CAPMC_TOKEN = config.get('CAPMC', 'CAPMC_TOKEN')
-
-    def read_environment_variables(self):
-        if self.isdev:
-            self.API_URL = os.getenv('API_URL_DEV')
-            self.CAPMC_TOKEN = os.getenv('CAPMC_TOKEN_DEV')
-        else:
-            self.API_URL = os.getenv('API_URL')
-            self.CAPMC_TOKEN = os.getenv('CAPMC_TOKEN')
 
     def retrieve(self, record_numbers=None, expanded_record=False):
         # No need to check for self.valid here; it's always OK to retrieve records.
@@ -204,35 +175,33 @@ class REDCapInterface:
             elif not isinstance(record_numbers, list):
                 return []
 
-        data_pull = self.build_data_pull(record_numbers, expanded_record=expanded_record)
+        data_pull = self._build_data_pull(record_numbers, expanded_record=expanded_record)
         r = requests.post(self.API_URL, data=data_pull, verify=True)
 
         if not r or r.status_code != 200:
             raise Exception("Unable to query REDCap API for records.")
 
         dates_df = pd.json_normalize(r.json())
-
-        # Convert strings to new fields in datetime format.
-        dates_df['dob_dt'] = dates_df['dob'].apply(convert_to_date)
-        dates_df['primary_consent_date_dt'] = dates_df['primary_consent_date'].apply(convert_to_date)
-        dates_df['core_participant_date_dt'] = dates_df['core_participant_date'].apply(convert_to_date)
-        dates_df['date_of_last_activity_dt'] = dates_df['date_of_last_activity'].apply(convert_to_date)
         return dates_df
 
     def update(self, new_data_records=None):
-
         if not self.valid:
-            return
+            return None
+
+        if isinstance(new_data_records, pd.DataFrame):
+            new_data_records = [new_data_records]
+        elif not isinstance(new_data_records, list):
+            raise Exception("Input is neither a single dict nor a list of dict objects.")
 
         for new_data_record in new_data_records:
             # Get a copy of what's there now.
-            record_number = new_data_record['record']
-            existing_record = self.retrieve(record_number)
+            record_number = int(new_data_record['study_id'][0])
+            existing_record = self.retrieve(record_number, expanded_record=True)
 
-            if existing_record is None:
+            if existing_record is None or len(existing_record) == 0:
                 # There's no match--so create a new one.
-                if not self.insert(new_data_record):
-                    raise Exception("Unable to insert new record.")
+                if not self.create(new_data_record):
+                    raise Exception("Unable to create new record.")
             else:
                 # Delete existing record so that we'll be allowed to
                 #  insert a record with the same record number.
@@ -240,14 +209,25 @@ class REDCapInterface:
                     draft_record = existing_record.copy()
 
                     # Overwrite our copy of what's currently in REDCap
-                    #  with the properties we've been given.
+                    #  with whatever properties we've been given.
                     for key in new_data_record:
-                        draft_record[key] = new_data_record[key]
+                        # Not allowed to update the primary key "study_id".
+                        if key != "study_id":
+                            try:
+                                new_value = new_data_record[key]
+
+                                if isinstance(new_value, pd.Series):
+                                    new_value = new_value[0]
+
+                                draft_record[key] = new_value
+
+                            except KeyError:
+                                raise Exception(f"Unable to update dataframe field {key}.")
 
                     # Push the modified record.
-                    if not self.insert(draft_record):
+                    if not self.create(draft_record):
                         # If that didn't work, we need to put the original record back.
-                        if self.insert(existing_record):
+                        if self.create(existing_record):
                             # Need to notify that update didn't work.
                             # However, we restored the original record.
                             raise Exception("Unable to update; original record was restored.")

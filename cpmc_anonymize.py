@@ -36,14 +36,14 @@ def anonymize_database():
             patient_dead = False
 
             # Only include death date occasionally.
-            if fake.random_int(min = 0, max = 9) > 7:
+            if fake.random_int(min=0, max=9) > 7:
                 latest_date = max([date_of_last_activity, core_participant_date])
                 df.at[index, 'death_datetime'] = fake.date_between(latest_date).strftime("%m/%d/%y")
                 patient_dead = True
 
             df.at[index, 'first_name_from_hp'] = df.at[index, 'first_name']
             df.at[index, 'last_name_from_hp']= df.at[index, 'last_name']
-            df.at[index, 'sex'] = fake.random_int(min = 1, max=3)
+            df.at[index, 'sex'] = fake.random_int(min=1, max=3)
             df.at[index, 'race'] = fake.random_int(min=1, max=5)
             df.at[index, 'ethnicity'] = fake.random_int(min=1, max=2)
             address_pieces = re.split(',|\n', fake.address(), maxsplit=1)
@@ -74,7 +74,12 @@ def anonymize_database():
 
             df.at[index, 'date_added'] = fake.past_datetime(start_date='-5d')
             df.at[index, 'pmi_id'] = str(fake.random_int(min=100000, max=500000))
+
+            if not redcap_interface_object.update(df):
+                raise Exception(f"Unable to update record {df.at[index, 'study_id']}")
+
             bar()
+
 
 if __name__ == '__main__':
     anonymize_database()

@@ -1,38 +1,12 @@
 import pandas as pd
+import re
 from datetime import datetime
+from faker import Faker
 from unittest import TestCase
 from REDCap_API_interface import REDCapInterface
 from utilities import convert_to_date
 
 class TestREDCap(TestCase):
-    def test_object_instantiation(self):
-        #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
-        redcap_interface_object = REDCapInterface(True)
-        message = "Unable to instantiate a REDCapInterface object."
-        self.assertIsInstance(redcap_interface_object, REDCapInterface, message)
-
-        version_number = redcap_interface_object.version()
-        self.assertEqual(version_number, "10.6.21")
-        pass
-
-    def test_single_record_retrieval(self):
-        redcap_interface_object = REDCapInterface(True)
-        df = redcap_interface_object.retrieve(6345949)
-        message = "Unable to retrieve data frame from REDCap."
-        self.assertIsInstance(df, pd.DataFrame, message)
-        num_elements_returned: int = df.shape[0]
-        message = f"Expected 1 element in dataframe but received {num_elements_returned}."
-        self.assertEqual(num_elements_returned, 1, message)
-
-    def test_multiple_record_retrieval(self):
-        redcap_interface_object = REDCapInterface(True)
-        df = redcap_interface_object.retrieve([6345966, 6345949])
-        message = "Unable to retrieve data frame from REDCap."
-        self.assertIsInstance(df, pd.DataFrame, message)
-        num_elements_returned: int = df.shape[0]
-        message = f"Expected 2 elements in dataframe but received {num_elements_returned}."
-        self.assertEqual(num_elements_returned, 2, message)
-
     def test_bulk_record_retrieval(self):
         redcap_interface_object = REDCapInterface(True)
         df = redcap_interface_object.retrieve()
@@ -41,6 +15,24 @@ class TestREDCap(TestCase):
         num_elements_returned: int = df.shape[0]
         message = f"Expected many elements in dataframe but received {num_elements_returned}."
         self.assertGreater(num_elements_returned, 2, message)
+
+    def test_create_one_record(self):
+        redcap_interface_object = REDCapInterface(True)
+        next_study_id = redcap_interface_object.next_record_number()
+        record = self.create_fake_record(next_study_id)
+        self.assertTrue(redcap_interface_object.create(record))
+
+    def test_create_multiple_records(self):
+        redcap_interface_object = REDCapInterface(True)
+        num_records_to_create = 3
+        success = True
+
+        for record_index in range(num_records_to_create):
+            next_study_id = redcap_interface_object.next_record_number()
+            record = self.create_fake_record(next_study_id)
+            success &= redcap_interface_object.create(record)
+
+        self.assertTrue(success)
 
     def test_date_conversion(self):
         date_value_true = datetime.strptime("31/01/1970", "%d/%m/%Y")
@@ -59,6 +51,10 @@ class TestREDCap(TestCase):
         self.assertEqual(date_string_converted, date_value_true)
 
         date_string_test = '01-31-70'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertEqual(date_string_converted, date_value_true)
+
+        date_string_test = '70-01-31'
         date_string_converted = convert_to_date(date_string_test)
         self.assertEqual(date_string_converted, date_value_true)
 
@@ -85,3 +81,105 @@ class TestREDCap(TestCase):
         date_string_test = 'Jan 31 1970 12:00AM'
         date_string_converted = convert_to_date(date_string_test)
         self.assertEqual(date_string_converted, date_value_true)
+
+    def test_delete_record(self):
+        redcap_interface_object = REDCapInterface(True)
+        last_record_number = redcap_interface_object.last_record_number(except_for=6393740)
+
+        if last_record_number is None or last_record_number <= 0:
+            raise Exception("Unable to find any records I'm allowed to delete.")
+
+        message = "Unable to delete object."
+        print(f"Deleting record {last_record_number}.")
+        self.assertTrue(redcap_interface_object.delete(last_record_number), message)
+
+    def test_last_record_number(self):
+        redcap_interface_object = REDCapInterface(True)
+        last_valid_number = redcap_interface_object.last_record_number()
+        self.assertTrue(isinstance(last_valid_number, int))
+        last_valid_number = redcap_interface_object.last_record_number(except_for=6393740)
+        self.assertTrue(isinstance(last_valid_number, int))
+
+    def test_multiple_record_retrieval(self):
+        redcap_interface_object = REDCapInterface(True)
+        df = redcap_interface_object.retrieve([6345966, 6345949])
+        message = "Unable to retrieve data frame from REDCap."
+        self.assertIsInstance(df, pd.DataFrame, message)
+        num_elements_returned: int = df.shape[0]
+        message = f"Expected 2 elements in dataframe but received {num_elements_returned}."
+        self.assertEqual(num_elements_returned, 2, message)
+
+    def test_next_record_number(self):
+        redcap_interface_object = REDCapInterface(True)
+        next_number = redcap_interface_object.next_record_number()
+        self.assertTrue(isinstance(next_number, int))
+
+    def test_object_instantiation(self):
+        #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
+        redcap_interface_object = REDCapInterface(True)
+        message = "Unable to instantiate a REDCapInterface object."
+        self.assertIsInstance(redcap_interface_object, REDCapInterface, message)
+
+        version_number = redcap_interface_object.version()
+        self.assertEqual(version_number, "10.6.21")
+        pass
+
+    def test_single_record_retrieval(self):
+        redcap_interface_object = REDCapInterface(True)
+        df = redcap_interface_object.retrieve(6345949)
+        message = "Unable to retrieve data frame from REDCap."
+        self.assertIsInstance(df, pd.DataFrame, message)
+        num_elements_returned: int = df.shape[0]
+        message = f"Expected 1 element in dataframe but received {num_elements_returned}."
+        self.assertEqual(num_elements_returned, 1, message)
+
+    def test_update_record(self):
+        redcap_interface_object = REDCapInterface(True)
+        last_record_number = redcap_interface_object.last_record_number(except_for=6393740)
+
+        if last_record_number is None or last_record_number <= 0:
+            raise Exception("Unable to find any records I'm allowed to update.")
+
+        right_now = datetime.now()
+        right_now_string = datetime.strftime(right_now, '%Y-%m-%d')
+        new_info = {'study_id': str(last_record_number),
+                    'date_of_last_activity': right_now_string}
+        new_info_df = pd.DataFrame(data=new_info, index=[0])
+        self.assertTrue(redcap_interface_object.update(new_info_df))
+
+        # Check that the date_of_last_activity field was really updated.
+        updated_record = redcap_interface_object.retrieve(last_record_number)
+        self.assertTrue(updated_record is not None and isinstance(updated_record, pd.DataFrame),
+                        "Unable to retrieve updated record.")
+        self.assertTrue('date_of_last_activity' in updated_record,
+                        "Unable to find 'date_of_last_activity' in updated record.")
+        retrieved_datestring = updated_record['date_of_last_activity'][0]
+        self.assertEqual(right_now_string, retrieved_datestring, "Record was not updated.")
+
+    @staticmethod
+    def create_fake_record(next_study_id):
+        fake = Faker()
+        birthdate = fake.date_of_birth(minimum_age=18, maximum_age=115)
+        primary_consent_date = fake.date_between(birthdate)
+        core_participant_date = fake.date_between(primary_consent_date)
+
+        # Strip off the extension.
+        phone_number = fake.phone_number()
+        phone_number = re.sub(r'x\d+', '', phone_number)
+
+        record = {
+            'study_id': next_study_id,
+            'first_name': fake.first_name(),
+            'last_name': fake.last_name(),
+            'phone_number': phone_number,
+            'email_address': fake.email(),
+            'dob': birthdate.strftime("%Y-%m-%d"),
+            'ethnicity': fake.random_int(min=1, max=2),
+            'race': fake.random_int(min=1, max=5),
+            'sex': fake.random_int(min=1, max=3),
+            'core_participant_date': core_participant_date.strftime("%Y-%m-%d"),
+            'primary_consent_date': primary_consent_date.strftime("%Y-%m-%d"),
+            'date_of_last_activity': datetime.now().strftime("%Y-%m-%d"),
+        }
+
+        return record
