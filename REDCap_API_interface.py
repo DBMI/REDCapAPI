@@ -13,8 +13,9 @@ class REDCapInterface:
         self.isdev = _isdev
         self._read_config_file()
 
-        if self.isdev and not self._known_test_record_present:
-            raise Exception("WARNING! Unable to find known test record. You might not be connected to the DEV database.")
+        if self.isdev and not self._known_test_record_present():
+            raise RuntimeError("WARNING! Unable to find known test record." +
+                               "You might not be connected to the DEV database.")  # pragma: no cover
 
         # Lets all methods know that we're talking to the correct database.
         self.valid = True
@@ -56,7 +57,7 @@ class REDCapInterface:
         return pull_dict
 
     def create(self, data_records):
-        if not self.valid:
+        if not self.valid:  # pragma: no cover
             return None
 
         if data_records is None:
@@ -64,9 +65,6 @@ class REDCapInterface:
 
         if isinstance(data_records, dict):
             data_records = [data_records]
-        elif isinstance(data_records, list):
-            if len(data_records) == 1:
-                data_records = [data_records]
         elif isinstance(data_records, pd.DataFrame):
             data_records = data_records.to_dict('records')
         else:
@@ -86,7 +84,7 @@ class REDCapInterface:
         return r is not None and r.status_code == 200
 
     def delete(self, record_number):
-        if not self.valid:
+        if not self.valid:  # pragma: no cover
             return None
 
         if record_number:
@@ -101,42 +99,44 @@ class REDCapInterface:
             return r is not None and r.status_code == 200
 
     def exists(self, record_number=None):
-        if not self.valid:
+        if not self.valid:  # pragma: no cover
             return None
 
         if record_number:
             if isinstance(record_number, int):
                 data_pull = self._build_data_pull([record_number])
             elif not isinstance(record_number, list):
-                raise Exception("Input 'record_number' is neither int nor list.")
+                raise TypeError("Input 'record_number' is neither int nor list.")
 
             r = requests.post(self.API_URL, data=data_pull, verify=True)
 
             try:
-                return r.status_code == 200
-            except NameError:
+                return r.status_code == 200 and 'study_id' in r.text
+            except RuntimeError:  # pragma: no cover
                 return False
         else:
             return False
 
     # Check for the presence of a known test record to be doubly sure we're connected to DEV_CAPMC_RECRUITMENT.
     def _known_test_record_present(self):
-        test_record_number = 6393740
+        test_record_number = 6393740  # pragma: no cover
         record = self.retrieve(test_record_number, expanded_record=True)
 
         if record is None or not isinstance(record, pd.DataFrame) \
                 or 'first_name' not in record or 'last_name' not in record:
-            raise Exception("Unable to retrieve known test record. You might not be connected to the DEV database.")
+            raise RuntimeError("Unable to retrieve known test record." +
+                               "You might not be connected to the DEV database.")  # pragma: no cover
 
         return record.iloc[0].first_name == 'TESTER' and record.iloc[0].last_name == 'TESTDATA'
 
     def last_record_number(self, except_for=None):
         last_valid_record_number = self.next_record_number() - 1
 
-        while not self.exists(last_valid_record_number)\
-                and last_valid_record_number > 0\
-                and last_valid_record_number != except_for:
-            last_valid_record_number -= 1
+        while not self.exists(last_valid_record_number) or last_valid_record_number == except_for:
+            if last_valid_record_number > 0:
+                last_valid_record_number -= 1
+            else:
+                raise RuntimeError("Unable to find any valid record numbers.")  # pragma: no cover
 
         return last_valid_record_number
 
@@ -149,12 +149,12 @@ class REDCapInterface:
         r = requests.post(self.API_URL, data=fields)
 
         if r is None or r.status_code != 200:
-            raise Exception("Unable to query for next record number.")
+            raise RuntimeError("Unable to query for next record number.")  # pragma: no cover
 
         try:
             return int(r.text)
-        except TypeError:
-            raise Exception("Unable to parse next record number.")
+        except TypeError:  # pragma: no cover
+            raise RuntimeError("Unable to parse next record number.")
 
     def _read_config_file(self):
         config = configparser.ConfigParser()
@@ -173,25 +173,25 @@ class REDCapInterface:
             if isinstance(record_numbers, int):
                 record_numbers = [record_numbers]
             elif not isinstance(record_numbers, list):
-                return []
+                return None
 
         data_pull = self._build_data_pull(record_numbers, expanded_record=expanded_record)
         r = requests.post(self.API_URL, data=data_pull, verify=True)
 
-        if not r or r.status_code != 200:
-            raise Exception("Unable to query REDCap API for records.")
+        if not r or r.status_code != 200 or "study_id" not in r.text:
+            raise RuntimeError("Unable to query REDCap API for records.")
 
         dates_df = pd.json_normalize(r.json())
         return dates_df
 
     def update(self, new_data_records=None):
-        if not self.valid:
+        if not self.valid:  # pragma: no cover
             return None
 
         if isinstance(new_data_records, pd.DataFrame):
             new_data_records = [new_data_records]
         elif not isinstance(new_data_records, list):
-            raise Exception("Input is neither a single dict nor a list of dict objects.")
+            raise TypeError("Input is neither a single dict nor a list of dict objects.")
 
         for new_data_record in new_data_records:
             # Get a copy of what's there now.
@@ -200,8 +200,8 @@ class REDCapInterface:
 
             if existing_record is None or len(existing_record) == 0:
                 # There's no match--so create a new one.
-                if not self.create(new_data_record):
-                    raise Exception("Unable to create new record.")
+                if not self.create(new_data_record):  # pragma: no cover
+                    raise RuntimeError("Unable to create new record.")
             else:
                 # Delete existing record so that we'll be allowed to
                 #  insert a record with the same record number.
@@ -221,8 +221,8 @@ class REDCapInterface:
 
                                 draft_record[key] = new_value
 
-                            except KeyError:
-                                raise Exception(f"Unable to update dataframe field {key}.")
+                            except KeyError:  # pragma: no cover
+                                raise KeyError(f"Unable to update dataframe field {key}.")
 
                     # Push the modified record.
                     if not self.create(draft_record):
@@ -230,13 +230,13 @@ class REDCapInterface:
                         if self.create(existing_record):
                             # Need to notify that update didn't work.
                             # However, we restored the original record.
-                            raise Exception("Unable to update; original record was restored.")
-                        else:
+                            raise RuntimeError("Unable to update; original record was restored.")
+                        else:  # pragma: no cover
                             # Ok, now we have a problem.
                             # We deleted the original record,
                             # are unable to insert the modified record,
                             # AND can't restore the deleted record.
-                            raise Exception("Unable to restore deleted record.")
+                            raise RuntimeError("Unable to restore deleted record.")
 
             return True
 
@@ -248,11 +248,11 @@ class REDCapInterface:
 
         r = requests.post(self.API_URL, data=fields, verify=True)
 
-        if not r or r.status_code != 200:
-            raise Exception("Unable to query REDCap API for version.")
+        if not r or r.status_code != 200: # pragma: no cover
+            raise RuntimeError("Unable to query REDCap API for version.")
 
         return r.text
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     REDCap_object = REDCapInterface(True)

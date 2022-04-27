@@ -18,6 +18,8 @@ class TestREDCap(TestCase):
 
     def test_create_one_record(self):
         redcap_interface_object = REDCapInterface(True)
+        self.assertTrue(redcap_interface_object.create(None) is None)
+        self.assertFalse(redcap_interface_object.create("should not work"))
         next_study_id = redcap_interface_object.next_record_number()
         record = self.create_fake_record(next_study_id)
         self.assertTrue(redcap_interface_object.create(record))
@@ -82,22 +84,52 @@ class TestREDCap(TestCase):
         date_string_converted = convert_to_date(date_string_test)
         self.assertEqual(date_string_converted, date_value_true)
 
+        date_string_test = ''
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertTrue(date_string_converted is None)
+
+        date_string_test = 'text only'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertTrue(date_string_converted is None)
+
+        date_string_test = '1234 cannot be parsed'
+        date_string_converted = convert_to_date(date_string_test)
+        self.assertTrue(date_string_converted is None)
+
     def test_delete_record(self):
         redcap_interface_object = REDCapInterface(True)
         last_record_number = redcap_interface_object.last_record_number(except_for=6393740)
 
-        if last_record_number is None or last_record_number <= 0:
+        if last_record_number is None or last_record_number <= 0:  # pragma: no cover
             raise Exception("Unable to find any records I'm allowed to delete.")
 
         message = "Unable to delete object."
-        print(f"Deleting record {last_record_number}.")
         self.assertTrue(redcap_interface_object.delete(last_record_number), message)
+
+    def test_exists(self):
+        redcap_interface_object = REDCapInterface(True)
+        last_record_number = redcap_interface_object.last_record_number()
+        self.assertTrue(redcap_interface_object.exists(last_record_number))
+        self.assertFalse(redcap_interface_object.exists(None))
+
+        with self.assertRaises(TypeError):
+            redcap_interface_object.exists("should throw error")
+
+        self.assertFalse(redcap_interface_object.exists(-1))
+
+    def test_known_record_present(self):
+        redcap_interface_object = REDCapInterface(True)
+        self.assertTrue(redcap_interface_object._known_test_record_present())
 
     def test_last_record_number(self):
         redcap_interface_object = REDCapInterface(True)
         last_valid_number = redcap_interface_object.last_record_number()
         self.assertTrue(isinstance(last_valid_number, int))
         last_valid_number = redcap_interface_object.last_record_number(except_for=6393740)
+        self.assertTrue(isinstance(last_valid_number, int))
+
+        # Force method to look past the first guess (next number - 1)?
+        last_valid_number = redcap_interface_object.last_record_number(except_for=last_valid_number)
         self.assertTrue(isinstance(last_valid_number, int))
 
     def test_multiple_record_retrieval(self):
@@ -115,10 +147,18 @@ class TestREDCap(TestCase):
         self.assertTrue(isinstance(next_number, int))
 
     def test_object_instantiation(self):
+        #   This is the ONLY time in testing that we'll instantiate a REDCapInterface object
+        #    WITHOUT the isdev flag set. It's to ensure we CAN read the production token.
+        production_redcap_interface_object = REDCapInterface(False)
+        self.assertIsInstance(production_redcap_interface_object, REDCapInterface,
+                              "Unable to instantiate a PRODUCTION REDCapInterface object.")
+        version_number = production_redcap_interface_object.version()
+        self.assertEqual(version_number, "10.6.21")
+
         #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
         redcap_interface_object = REDCapInterface(True)
-        message = "Unable to instantiate a REDCapInterface object."
-        self.assertIsInstance(redcap_interface_object, REDCapInterface, message)
+        self.assertIsInstance(redcap_interface_object, REDCapInterface,
+                              "Unable to instantiate a DEV REDCapInterface object.")
 
         version_number = redcap_interface_object.version()
         self.assertEqual(version_number, "10.6.21")
@@ -127,17 +167,20 @@ class TestREDCap(TestCase):
     def test_single_record_retrieval(self):
         redcap_interface_object = REDCapInterface(True)
         df = redcap_interface_object.retrieve(6345949)
-        message = "Unable to retrieve data frame from REDCap."
-        self.assertIsInstance(df, pd.DataFrame, message)
+        self.assertIsInstance(df, pd.DataFrame, "Unable to retrieve data frame from REDCap.")
         num_elements_returned: int = df.shape[0]
-        message = f"Expected 1 element in dataframe but received {num_elements_returned}."
-        self.assertEqual(num_elements_returned, 1, message)
+        self.assertEqual(num_elements_returned, 1,
+                         f"Expected 1 element in dataframe but received {num_elements_returned}.")
+        self.assertTrue(redcap_interface_object.retrieve("should not work") is None)
+
+        with self.assertRaises(RuntimeError):
+            redcap_interface_object.retrieve(-1)
 
     def test_update_record(self):
         redcap_interface_object = REDCapInterface(True)
         last_record_number = redcap_interface_object.last_record_number(except_for=6393740)
 
-        if last_record_number is None or last_record_number <= 0:
+        if last_record_number is None or last_record_number <= 0:  # pragma: no cover
             raise Exception("Unable to find any records I'm allowed to update.")
 
         right_now = datetime.now()
@@ -155,6 +198,20 @@ class TestREDCap(TestCase):
                         "Unable to find 'date_of_last_activity' in updated record.")
         retrieved_datestring = updated_record['date_of_last_activity'][0]
         self.assertEqual(right_now_string, retrieved_datestring, "Record was not updated.")
+
+        with self.assertRaises(TypeError):
+            redcap_interface_object.update("should throw error")
+
+        # What if the attempted update can't be inserted? Ensure
+        new_info['this_column_does_not_exist'] = "this won't work"
+        new_info_df = pd.DataFrame(data=new_info, index=[0])
+
+        with self.assertRaises(RuntimeError) as error_raised:
+            redcap_interface_object.update(new_info_df)
+        self.assertEqual(
+            "Unable to update; original record was restored.",
+            str(error_raised.exception)
+        )
 
     @staticmethod
     def create_fake_record(next_study_id):
