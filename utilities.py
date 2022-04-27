@@ -20,7 +20,11 @@ def convert_to_date(date_string):
     elif re.match(r"\d{1,2}-\d{1,2}-\d{4}", date_string):  # Match 01-31-1970
         return datetime.strptime(date_string, '%m-%d-%Y')
     elif re.match(r"\d{1,2}-\d{1,2}-\d{2}", date_string):  # Match 01-31-70
-        return datetime.strptime(date_string, '%m-%d-%y')
+        try:
+            return datetime.strptime(date_string, '%m-%d-%y')
+        except ValueError:
+            return datetime.strptime(date_string, '%y-%m-%d')
+
     elif re.match(r"\d{4}-\d{1,2}-\d{1,2}\s+\d{2}:\d{2}:\d{2}", date_string):  # Match 1970-01-31 12:05:10
         return datetime.strptime(date_string, '%Y-%m-%d  %H:%M:%S')
     elif re.match(r"\d{4}-\d{1,2}-\d{1,2}", date_string):  # Match 1970-01-31
