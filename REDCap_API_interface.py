@@ -6,44 +6,46 @@ import requests
 
 class REDCapInterface:
     def __init__(self, isdev=False):
-        self._api_url = None
-        self._capmc_token = None
-        self._isdev = isdev
-        self._read_config_file()
+        self.__api_uri = None
+        self.__capmc_token = None
+        self.__isdev = isdev
+        self.__read_config_file()
 
-        if self._isdev and not self._known_test_record_present():
-            raise RuntimeError("WARNING! Unable to find known test record." +
-                               "You might not be connected to the DEV database.")  # pragma: no cover
+        if self.__isdev and not self.__known_test_record_present():
+            raise RuntimeError(
+                "WARNING! Unable to find known test record."
+                + "You might not be connected to the DEV database."
+            )  # pragma: no cover
 
         # Lets all methods know that we're talking to the correct database.
         self._valid = True
 
-    def _build_data_pull(self, record_numbers=None, expanded_record=False):
+    def __build_data_pull(self, record_numbers=None, expanded_record=False):
         # NOT specifying the "fields" list ==> give me ALL the fields.
         pull_dict = {
-            'token': self._capmc_token,
-            'content': 'record',
-            'format': 'json',
-            'type': 'flat',
-            'csvDelimiter': '',
-            'rawOrLabel': 'raw',
-            'rawOrLabelHeaders': 'raw',
-            'exportCheckboxLabel': 'false',
-            'exportSurveyFields': 'false',
-            'exportDataAccessGroups': 'false',
-            'returnFormat': 'json'
+            "token": self.__capmc_token,
+            "content": "record",
+            "format": "json",
+            "type": "flat",
+            "csvDelimiter": "",
+            "rawOrLabel": "raw",
+            "rawOrLabelHeaders": "raw",
+            "exportCheckboxLabel": "false",
+            "exportSurveyFields": "false",
+            "exportDataAccessGroups": "false",
+            "returnFormat": "json",
         }
 
         # For now, restrict the fields to just this list
         #  ->unless<- we're in DEV mode AND "expanded_record" selected.
-        if not self._isdev or not expanded_record:
-            pull_dict['fields[0]'] = 'study_id',
-            pull_dict['fields[1]'] = 'dob',
-            pull_dict['fields[2]'] = 'primary_consent_date',
-            pull_dict['fields[3]'] = 'core_participant_date',
-            pull_dict['fields[4]'] = 'date_of_last_activity',
+        if not self.__isdev or not expanded_record:
+            pull_dict["fields[0]"] = ("study_id",)
+            pull_dict["fields[1]"] = ("dob",)
+            pull_dict["fields[2]"] = ("primary_consent_date",)
+            pull_dict["fields[3]"] = ("core_participant_date",)
+            pull_dict["fields[4]"] = ("date_of_last_activity",)
 
-        if record_numbers:
+        if record_numbers is not None:
             # Insert into the dictionary a key for each desired record number.
             record_count = 0
 
@@ -64,36 +66,36 @@ class REDCapInterface:
         if isinstance(data_records, dict):
             data_records = [data_records]
         elif isinstance(data_records, pd.DataFrame):
-            data_records = data_records.to_dict('records')
+            data_records = data_records.to_dict("records")
         else:
             return False
 
         data = json.dumps(data_records)
 
         fields = {
-            'token': self._capmc_token,
-            'content': 'record',
-            'format': 'json',
-            'type': 'flat',
-            'data': data,
+            "token": self.__capmc_token,
+            "content": "record",
+            "format": "json",
+            "type": "flat",
+            "data": data,
         }
 
-        r = requests.post(self._api_url, data=fields)
+        r = requests.post(self.__api_uri, data=fields)
         return r is not None and r.status_code == 200
 
     def delete(self, record_number):
         if not self._valid:  # pragma: no cover
             return None
 
-        if record_number:
+        if record_number is not None:
             fields = {
-                'token': self._capmc_token,
-                'action': 'delete',
-                'content': 'record',
-                'records[0]': record_number
+                "token": self.__capmc_token,
+                "action": "delete",
+                "content": "record",
+                "records[0]": record_number,
             }
 
-            r = requests.post(self._api_url, data=fields)
+            r = requests.post(self.__api_uri, data=fields)
             return r is not None and r.status_code == 200
 
     def exists(self, record_number=None):
@@ -102,38 +104,47 @@ class REDCapInterface:
 
         data_pull = None
 
-        if record_number:
+        if record_number is not None:
             if isinstance(record_number, int):
-                data_pull = self._build_data_pull([record_number])
+                data_pull = self.__build_data_pull([record_number])
             elif not isinstance(record_number, list):
                 raise TypeError("Input 'record_number' is neither int nor list.")
 
-            r = requests.post(self._api_url, data=data_pull, verify=True)
+            r = requests.post(self.__api_uri, data=data_pull, verify=True)
 
             try:
-                return r.status_code == 200 and 'study_id' in r.text
+                return r.status_code == 200 and "study_id" in r.text
             except RuntimeError:  # pragma: no cover
                 return False
         else:
             return False
 
     # Check for the presence of a known test record to be doubly sure we're connected to DEV_CAPMC_RECRUITMENT.
-    def _known_test_record_present(self):
+    def __known_test_record_present(self):
         test_record_number = 6393740  # pragma: no cover
         record = self.retrieve(test_record_number, expanded_record=True)
 
-        if record is None or not isinstance(record, pd.DataFrame) \
-                or 'first_name' not in record or 'last_name' not in record:
-            raise RuntimeError("Unable to retrieve known test record." +
-                               "You might not be connected to the DEV database.")  # pragma: no cover
+        if (
+            record is None
+            or not isinstance(record, pd.DataFrame)
+            or "first_name" not in record
+            or "last_name" not in record
+        ):
+            raise RuntimeError(
+                "Unable to retrieve known test record."
+                + "You might not be connected to the DEV database."
+            )  # pragma: no cover
 
-        return record.iloc[0].first_name == 'TESTER' and record.iloc[0].last_name == 'TESTDATA'
+        return (
+            record.iloc[0].first_name == "TESTER"
+            and record.iloc[0].last_name == "TESTDATA"
+        )
 
     def last_record_number(self, except_for=None, number_desired=1):
         last_valid_record_number = self.next_record_number() - 1
         valid_record_numbers_found = []
 
-        if except_for:
+        if except_for is not None:
             if isinstance(except_for, int):
                 except_for = [except_for]
             elif not isinstance(except_for, list):  # pragma: no cover
@@ -142,11 +153,16 @@ class REDCapInterface:
             except_for = [None]
 
         while len(valid_record_numbers_found) < number_desired:
-            while not self.exists(last_valid_record_number) or last_valid_record_number in except_for:
+            while (
+                not self.exists(last_valid_record_number)
+                or last_valid_record_number in except_for
+            ):
                 if last_valid_record_number > 0:
                     last_valid_record_number -= 1
                 else:
-                    raise RuntimeError("Unable to find any valid record numbers.")  # pragma: no cover
+                    raise RuntimeError(
+                        "Unable to find any valid record numbers."
+                    )  # pragma: no cover
 
             except_for.append(last_valid_record_number)
             valid_record_numbers_found.append(last_valid_record_number)
@@ -158,41 +174,45 @@ class REDCapInterface:
 
     def next_record_number(self):
         fields = {
-            'token': self._capmc_token,
-            'content': 'generateNextRecordName',
+            "token": self.__capmc_token,
+            "content": "generateNextRecordName",
         }
 
-        r = requests.post(self._api_url, data=fields)
+        r = requests.post(self.__api_uri, data=fields)
 
         if r is None or r.status_code != 200:
-            raise RuntimeError("Unable to query for next record number.")  # pragma: no cover
+            raise RuntimeError(
+                "Unable to query for next record number."
+            )  # pragma: no cover
 
         try:
             return int(r.text)
         except TypeError:  # pragma: no cover
             raise RuntimeError("Unable to parse next record number.")
 
-    def _read_config_file(self):
+    def __read_config_file(self):
         config = configparser.ConfigParser()
 
-        if self._isdev:
-            config.read(r'F:\RedCap\secrets\config-dev.key')
+        if self.__isdev:
+            config.read(r"F:\RedCap\secrets\config-dev.key")
         else:
-            config.read(r'F:\RedCap\secrets\config.key')
+            config.read(r"F:\RedCap\secrets\config.key")
 
-        self._api_url = config.get('API', 'API_URL')
-        self._capmc_token = config.get('CAPMC', 'CAPMC_TOKEN')
+        self.__api_uri = config.get("API", "API_URL")
+        self.__capmc_token = config.get("CAPMC", "CAPMC_TOKEN")
 
     def retrieve(self, record_numbers=None, expanded_record=False):
         # No need to check for self._valid here; it's always OK to retrieve records.
-        if record_numbers:
+        if record_numbers is not None:
             if isinstance(record_numbers, int):
                 record_numbers = [record_numbers]
             elif not isinstance(record_numbers, list):
                 return None
 
-        data_pull = self._build_data_pull(record_numbers, expanded_record=expanded_record)
-        r = requests.post(self._api_url, data=data_pull, verify=True)
+        data_pull = self.__build_data_pull(
+            record_numbers, expanded_record=expanded_record
+        )
+        r = requests.post(self.__api_uri, data=data_pull, verify=True)
 
         try:
             if not r or r.status_code != 200 or "study_id" not in r.text:
@@ -210,11 +230,13 @@ class REDCapInterface:
         if isinstance(new_data_records, pd.DataFrame):
             new_data_records = [new_data_records]
         elif not isinstance(new_data_records, list):
-            raise TypeError("Input is neither a single dict nor a list of dict objects.")
+            raise TypeError(
+                "Input is neither a single dict nor a list of dict objects."
+            )
 
         for new_data_record in new_data_records:
             # Get a copy of what's there now.
-            record_number = int(new_data_record['study_id'][0])
+            record_number = int(new_data_record["study_id"][0])
             existing_record = self.retrieve(record_number, expanded_record=True)
 
             if existing_record is None or len(existing_record) == 0:
@@ -241,7 +263,9 @@ class REDCapInterface:
                                 draft_record[key] = new_value
 
                             except KeyError:  # pragma: no cover
-                                raise KeyError(f"Unable to update dataframe field {key}.")
+                                raise KeyError(
+                                    f"Unable to update dataframe field {key}."
+                                )
 
                     # Push the modified record.
                     if not self.create(draft_record):
@@ -249,7 +273,9 @@ class REDCapInterface:
                         if self.create(existing_record):
                             # Need to notify that update didn't work.
                             # However, we restored the original record.
-                            raise RuntimeError("Unable to update; original record was restored.")
+                            raise RuntimeError(
+                                "Unable to update; original record was restored."
+                            )
                         else:  # pragma: no cover
                             # Ok, now we have a problem.
                             # We deleted the original record,
@@ -260,12 +286,9 @@ class REDCapInterface:
             return True
 
     def version(self):
-        fields = {
-            'token': self._capmc_token,
-            'content': 'version'
-        }
+        fields = {"token": self.__capmc_token, "content": "version"}
 
-        r = requests.post(self._api_url, data=fields, verify=True)
+        r = requests.post(self.__api_uri, data=fields, verify=True)
 
         if not r or r.status_code != 200:  # pragma: no cover
             raise RuntimeError("Unable to query REDCap API for version.")
@@ -276,5 +299,5 @@ class REDCapInterface:
             raise RuntimeError("Unable to parse query response.")
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     REDCap_object = REDCapInterface(isdev=True)
