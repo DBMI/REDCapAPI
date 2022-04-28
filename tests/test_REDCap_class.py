@@ -6,9 +6,16 @@ from unittest import TestCase
 from REDCap_API_interface import REDCapInterface
 from utilities import convert_to_date
 
+
 class TestREDCap(TestCase):
+
+    # We loaded a known fake patient name into this record.
+    # When we read that name, we can be sure we're looking at the DEV database.
+    known_fake_record_number = 6393740
+    api_version_string = "10.6.21"
+
     def test_bulk_record_retrieval(self):
-        redcap_interface_object = REDCapInterface(True)
+        redcap_interface_object = REDCapInterface(isdev=True)
         df = redcap_interface_object.retrieve()
         message = "Unable to retrieve data frame from REDCap."
         self.assertIsInstance(df, pd.DataFrame, message)
@@ -17,7 +24,7 @@ class TestREDCap(TestCase):
         self.assertGreater(num_elements_returned, 2, message)
 
     def test_create_one_record(self):
-        redcap_interface_object = REDCapInterface(True)
+        redcap_interface_object = REDCapInterface(isdev=True)
         self.assertTrue(redcap_interface_object.create(None) is None)
         self.assertFalse(redcap_interface_object.create("should not work"))
         next_study_id = redcap_interface_object.next_record_number()
@@ -25,7 +32,7 @@ class TestREDCap(TestCase):
         self.assertTrue(redcap_interface_object.create(record))
 
     def test_create_multiple_records(self):
-        redcap_interface_object = REDCapInterface(True)
+        redcap_interface_object = REDCapInterface(isdev=True)
         num_records_to_create = 3
         success = True
 
@@ -97,8 +104,8 @@ class TestREDCap(TestCase):
         self.assertTrue(date_string_converted is None)
 
     def test_delete_record(self):
-        redcap_interface_object = REDCapInterface(True)
-        last_record_number = redcap_interface_object.last_record_number(except_for=6393740)
+        redcap_interface_object = REDCapInterface(isdev=True)
+        last_record_number = redcap_interface_object.last_record_number(except_for=TestREDCap.known_fake_record_number)
 
         if last_record_number is None or last_record_number <= 0:  # pragma: no cover
             raise Exception("Unable to find any records I'm allowed to delete.")
@@ -107,7 +114,7 @@ class TestREDCap(TestCase):
         self.assertTrue(redcap_interface_object.delete(last_record_number), message)
 
     def test_exists(self):
-        redcap_interface_object = REDCapInterface(True)
+        redcap_interface_object = REDCapInterface(isdev=True)
         last_record_number = redcap_interface_object.last_record_number()
         self.assertTrue(redcap_interface_object.exists(last_record_number))
         self.assertFalse(redcap_interface_object.exists(None))
@@ -118,23 +125,29 @@ class TestREDCap(TestCase):
         self.assertFalse(redcap_interface_object.exists(-1))
 
     def test_known_record_present(self):
-        redcap_interface_object = REDCapInterface(True)
+        redcap_interface_object = REDCapInterface(isdev=True)
         self.assertTrue(redcap_interface_object._known_test_record_present())
 
     def test_last_record_number(self):
-        redcap_interface_object = REDCapInterface(True)
+        redcap_interface_object = REDCapInterface(isdev=True)
         last_valid_number = redcap_interface_object.last_record_number()
         self.assertTrue(isinstance(last_valid_number, int))
-        last_valid_number = redcap_interface_object.last_record_number(except_for=6393740)
+        last_valid_number = redcap_interface_object.last_record_number(except_for=TestREDCap.known_fake_record_number)
         self.assertTrue(isinstance(last_valid_number, int))
 
         # Force method to look past the first guess (next number - 1)?
         last_valid_number = redcap_interface_object.last_record_number(except_for=last_valid_number)
         self.assertTrue(isinstance(last_valid_number, int))
 
+        # Multiple values
+        last_valid_number = redcap_interface_object.last_record_number(number_desired=2)
+        self.assertTrue(isinstance(last_valid_number, list))
+        self.assertEqual(len(last_valid_number), 2)
+
     def test_multiple_record_retrieval(self):
-        redcap_interface_object = REDCapInterface(True)
-        df = redcap_interface_object.retrieve([6345966, 6345949])
+        redcap_interface_object = REDCapInterface(isdev=True)
+        two_valid_numbers = redcap_interface_object.last_record_number(number_desired=2)
+        df = redcap_interface_object.retrieve(two_valid_numbers)
         message = "Unable to retrieve data frame from REDCap."
         self.assertIsInstance(df, pd.DataFrame, message)
         num_elements_returned: int = df.shape[0]
@@ -142,31 +155,32 @@ class TestREDCap(TestCase):
         self.assertEqual(num_elements_returned, 2, message)
 
     def test_next_record_number(self):
-        redcap_interface_object = REDCapInterface(True)
+        redcap_interface_object = REDCapInterface(isdev=True)
         next_number = redcap_interface_object.next_record_number()
         self.assertTrue(isinstance(next_number, int))
 
     def test_object_instantiation(self):
         #   This is the ONLY time in testing that we'll instantiate a REDCapInterface object
         #    WITHOUT the isdev flag set. It's to ensure we CAN read the production token.
-        production_redcap_interface_object = REDCapInterface(False)
+        production_redcap_interface_object = REDCapInterface(isdev=False)
         self.assertIsInstance(production_redcap_interface_object, REDCapInterface,
                               "Unable to instantiate a PRODUCTION REDCapInterface object.")
         version_number = production_redcap_interface_object.version()
-        self.assertEqual(version_number, "10.6.21")
+        self.assertEqual(version_number, TestREDCap.api_version_string)
 
         #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
-        redcap_interface_object = REDCapInterface(True)
+        redcap_interface_object = REDCapInterface(isdev=True)
         self.assertIsInstance(redcap_interface_object, REDCapInterface,
                               "Unable to instantiate a DEV REDCapInterface object.")
 
         version_number = redcap_interface_object.version()
-        self.assertEqual(version_number, "10.6.21")
+        self.assertEqual(version_number, TestREDCap.api_version_string)
         pass
 
     def test_single_record_retrieval(self):
-        redcap_interface_object = REDCapInterface(True)
-        df = redcap_interface_object.retrieve(6345949)
+        redcap_interface_object = REDCapInterface(isdev=True)
+        last_record_number = redcap_interface_object.last_record_number()
+        df = redcap_interface_object.retrieve(last_record_number)
         self.assertIsInstance(df, pd.DataFrame, "Unable to retrieve data frame from REDCap.")
         num_elements_returned: int = df.shape[0]
         self.assertEqual(num_elements_returned, 1,
@@ -177,8 +191,8 @@ class TestREDCap(TestCase):
             redcap_interface_object.retrieve(-1)
 
     def test_update_record(self):
-        redcap_interface_object = REDCapInterface(True)
-        last_record_number = redcap_interface_object.last_record_number(except_for=6393740)
+        redcap_interface_object = REDCapInterface(isdev=True)
+        last_record_number = redcap_interface_object.last_record_number(except_for=TestREDCap.known_fake_record_number)
 
         if last_record_number is None or last_record_number <= 0:  # pragma: no cover
             raise Exception("Unable to find any records I'm allowed to update.")

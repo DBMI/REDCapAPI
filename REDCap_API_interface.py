@@ -6,11 +6,11 @@ import requests
 
 
 class REDCapInterface:
-    def __init__(self, _isdev=False):
+    def __init__(self, isdev=False):
         self.API_URL = None
         self.CAPMC_TOKEN = None
         self.RECORDS_PER_PAYLOAD = 100
-        self.isdev = _isdev
+        self.isdev = isdev
         self._read_config_file()
 
         if self.isdev and not self._known_test_record_present():
@@ -129,16 +129,32 @@ class REDCapInterface:
 
         return record.iloc[0].first_name == 'TESTER' and record.iloc[0].last_name == 'TESTDATA'
 
-    def last_record_number(self, except_for=None):
+    def last_record_number(self, except_for=None, number_desired=1):
         last_valid_record_number = self.next_record_number() - 1
+        valid_record_numbers_found = []
 
-        while not self.exists(last_valid_record_number) or last_valid_record_number == except_for:
-            if last_valid_record_number > 0:
-                last_valid_record_number -= 1
-            else:
-                raise RuntimeError("Unable to find any valid record numbers.")  # pragma: no cover
+        if except_for:
+            if isinstance(except_for, int):
+                except_for = [except_for]
+            elif not isinstance(except_for, list):  # pragma: no cover
+                raise TypeError("Argument 'except_for' is neither int nor list.")
+        else:
+            except_for = [None]
 
-        return last_valid_record_number
+        while len(valid_record_numbers_found) < number_desired:
+            while not self.exists(last_valid_record_number) or last_valid_record_number in except_for:
+                if last_valid_record_number > 0:
+                    last_valid_record_number -= 1
+                else:
+                    raise RuntimeError("Unable to find any valid record numbers.")  # pragma: no cover
+
+            except_for.append(last_valid_record_number)
+            valid_record_numbers_found.append(last_valid_record_number)
+
+        if len(valid_record_numbers_found) == 1:
+            return valid_record_numbers_found[0]
+        else:
+            return valid_record_numbers_found
 
     def next_record_number(self):
         fields = {
