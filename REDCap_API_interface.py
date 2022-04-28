@@ -1,29 +1,27 @@
 import configparser
 import json
-import os
 import pandas as pd
 import requests
 
 
 class REDCapInterface:
     def __init__(self, isdev=False):
-        self.API_URL = None
-        self.CAPMC_TOKEN = None
-        self.RECORDS_PER_PAYLOAD = 100
-        self.isdev = isdev
+        self._api_url = None
+        self._capmc_token = None
+        self._isdev = isdev
         self._read_config_file()
 
-        if self.isdev and not self._known_test_record_present():
+        if self._isdev and not self._known_test_record_present():
             raise RuntimeError("WARNING! Unable to find known test record." +
                                "You might not be connected to the DEV database.")  # pragma: no cover
 
         # Lets all methods know that we're talking to the correct database.
-        self.valid = True
+        self._valid = True
 
     def _build_data_pull(self, record_numbers=None, expanded_record=False):
         # NOT specifying the "fields" list ==> give me ALL the fields.
         pull_dict = {
-            'token': self.CAPMC_TOKEN,
+            'token': self._capmc_token,
             'content': 'record',
             'format': 'json',
             'type': 'flat',
@@ -38,7 +36,7 @@ class REDCapInterface:
 
         # For now, restrict the fields to just this list
         #  ->unless<- we're in DEV mode AND "expanded_record" selected.
-        if not self.isdev or not expanded_record:
+        if not self._isdev or not expanded_record:
             pull_dict['fields[0]'] = 'study_id',
             pull_dict['fields[1]'] = 'dob',
             pull_dict['fields[2]'] = 'primary_consent_date',
@@ -57,7 +55,7 @@ class REDCapInterface:
         return pull_dict
 
     def create(self, data_records):
-        if not self.valid:  # pragma: no cover
+        if not self._valid:  # pragma: no cover
             return None
 
         if data_records is None:
@@ -73,34 +71,36 @@ class REDCapInterface:
         data = json.dumps(data_records)
 
         fields = {
-            'token': self.CAPMC_TOKEN,
+            'token': self._capmc_token,
             'content': 'record',
             'format': 'json',
             'type': 'flat',
             'data': data,
         }
 
-        r = requests.post(self.API_URL, data=fields)
+        r = requests.post(self._api_url, data=fields)
         return r is not None and r.status_code == 200
 
     def delete(self, record_number):
-        if not self.valid:  # pragma: no cover
+        if not self._valid:  # pragma: no cover
             return None
 
         if record_number:
             fields = {
-                'token': self.CAPMC_TOKEN,
+                'token': self._capmc_token,
                 'action': 'delete',
                 'content': 'record',
                 'records[0]': record_number
             }
 
-            r = requests.post(self.API_URL, data=fields)
+            r = requests.post(self._api_url, data=fields)
             return r is not None and r.status_code == 200
 
     def exists(self, record_number=None):
-        if not self.valid:  # pragma: no cover
+        if not self._valid:  # pragma: no cover
             return None
+
+        data_pull = None
 
         if record_number:
             if isinstance(record_number, int):
@@ -108,7 +108,7 @@ class REDCapInterface:
             elif not isinstance(record_number, list):
                 raise TypeError("Input 'record_number' is neither int nor list.")
 
-            r = requests.post(self.API_URL, data=data_pull, verify=True)
+            r = requests.post(self._api_url, data=data_pull, verify=True)
 
             try:
                 return r.status_code == 200 and 'study_id' in r.text
@@ -158,11 +158,11 @@ class REDCapInterface:
 
     def next_record_number(self):
         fields = {
-            'token': self.CAPMC_TOKEN,
+            'token': self._capmc_token,
             'content': 'generateNextRecordName',
         }
 
-        r = requests.post(self.API_URL, data=fields)
+        r = requests.post(self._api_url, data=fields)
 
         if r is None or r.status_code != 200:
             raise RuntimeError("Unable to query for next record number.")  # pragma: no cover
@@ -175,16 +175,16 @@ class REDCapInterface:
     def _read_config_file(self):
         config = configparser.ConfigParser()
 
-        if self.isdev:
-            config.read('F:\RedCap\secrets\config-dev.key')
+        if self._isdev:
+            config.read(r'F:\RedCap\secrets\config-dev.key')
         else:
-            config.read('F:\RedCap\secrets\config.key')
+            config.read(r'F:\RedCap\secrets\config.key')
 
-        self.API_URL = config.get('API', 'API_URL')
-        self.CAPMC_TOKEN = config.get('CAPMC', 'CAPMC_TOKEN')
+        self._api_url = config.get('API', 'API_URL')
+        self._capmc_token = config.get('CAPMC', 'CAPMC_TOKEN')
 
     def retrieve(self, record_numbers=None, expanded_record=False):
-        # No need to check for self.valid here; it's always OK to retrieve records.
+        # No need to check for self._valid here; it's always OK to retrieve records.
         if record_numbers:
             if isinstance(record_numbers, int):
                 record_numbers = [record_numbers]
@@ -192,16 +192,19 @@ class REDCapInterface:
                 return None
 
         data_pull = self._build_data_pull(record_numbers, expanded_record=expanded_record)
-        r = requests.post(self.API_URL, data=data_pull, verify=True)
+        r = requests.post(self._api_url, data=data_pull, verify=True)
 
-        if not r or r.status_code != 200 or "study_id" not in r.text:
-            raise RuntimeError("Unable to query REDCap API for records.")
+        try:
+            if not r or r.status_code != 200 or "study_id" not in r.text:
+                raise RuntimeError("Unable to query REDCap API for records.")
+        except TypeError:  # pragma: no cover
+            raise RuntimeError("Unable to parse query response.")
 
         dates_df = pd.json_normalize(r.json())
         return dates_df
 
     def update(self, new_data_records=None):
-        if not self.valid:  # pragma: no cover
+        if not self._valid:  # pragma: no cover
             return None
 
         if isinstance(new_data_records, pd.DataFrame):
@@ -258,17 +261,20 @@ class REDCapInterface:
 
     def version(self):
         fields = {
-            'token': self.CAPMC_TOKEN,
+            'token': self._capmc_token,
             'content': 'version'
         }
 
-        r = requests.post(self.API_URL, data=fields, verify=True)
+        r = requests.post(self._api_url, data=fields, verify=True)
 
-        if not r or r.status_code != 200: # pragma: no cover
+        if not r or r.status_code != 200:  # pragma: no cover
             raise RuntimeError("Unable to query REDCap API for version.")
 
-        return r.text
+        try:
+            return r.text
+        except TypeError:  # pragma: no cover
+            raise RuntimeError("Unable to parse query response.")
 
 
 if __name__ == '__main__':  # pragma: no cover
-    REDCap_object = REDCapInterface(True)
+    REDCap_object = REDCapInterface(isdev=True)

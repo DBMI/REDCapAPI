@@ -36,5 +36,5 @@ def convert_to_date(date_string):
     elif re.match(r"[A-Z][a-z]{2}\s?\d{1,2}\s+\d{4}", date_string):  # Match Jan 31 1970
         return datetime.strptime(date_string, '%b %d %Y')
     else:
-        print(f"WE HAVE A PROBLEM WITH THIS DATE: {date_string}")
+        print(f'WE HAVE A PROBLEM WITH THIS DATE: "{date_string}"')
         return None

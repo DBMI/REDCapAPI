@@ -9,8 +9,11 @@ from utilities import convert_to_date
 
 class TestREDCap(TestCase):
 
-    # We loaded a known fake patient name into this record.
+    # We loaded a known fake patient name into this record number.
     # When we read that name, we can be sure we're looking at the DEV database.
+    # Accordingly, when deleting or updating records in test, we do NOT want
+    # to touch that special record. So we'll provide its record number to
+    # the last_record_number() method to specify that number is to be avoided.
     known_fake_record_number = 6393740
     api_version_string = "10.6.21"
 
@@ -91,6 +94,7 @@ class TestREDCap(TestCase):
         date_string_converted = convert_to_date(date_string_test)
         self.assertEqual(date_string_converted, date_value_true)
 
+        # Cases we expect to return None.
         date_string_test = ''
         date_string_converted = convert_to_date(date_string_test)
         self.assertTrue(date_string_converted is None)
@@ -110,8 +114,8 @@ class TestREDCap(TestCase):
         if last_record_number is None or last_record_number <= 0:  # pragma: no cover
             raise Exception("Unable to find any records I'm allowed to delete.")
 
-        message = "Unable to delete object."
-        self.assertTrue(redcap_interface_object.delete(last_record_number), message)
+        self.assertTrue(redcap_interface_object.delete(last_record_number),
+                        "Unable to delete object.")
 
     def test_exists(self):
         redcap_interface_object = REDCapInterface(isdev=True)
@@ -135,7 +139,7 @@ class TestREDCap(TestCase):
         last_valid_number = redcap_interface_object.last_record_number(except_for=TestREDCap.known_fake_record_number)
         self.assertTrue(isinstance(last_valid_number, int))
 
-        # Force method to look past the first guess (next number - 1)?
+        # Force method to look past the first guess (next number - 1).
         last_valid_number = redcap_interface_object.last_record_number(except_for=last_valid_number)
         self.assertTrue(isinstance(last_valid_number, int))
 
@@ -148,11 +152,10 @@ class TestREDCap(TestCase):
         redcap_interface_object = REDCapInterface(isdev=True)
         two_valid_numbers = redcap_interface_object.last_record_number(number_desired=2)
         df = redcap_interface_object.retrieve(two_valid_numbers)
-        message = "Unable to retrieve data frame from REDCap."
-        self.assertIsInstance(df, pd.DataFrame, message)
+        self.assertIsInstance(df, pd.DataFrame, "Unable to retrieve data frame from REDCap.")
         num_elements_returned: int = df.shape[0]
-        message = f"Expected 2 elements in dataframe but received {num_elements_returned}."
-        self.assertEqual(num_elements_returned, 2, message)
+        self.assertEqual(num_elements_returned, 2,
+                         f"Expected 2 elements in dataframe but received {num_elements_returned}.")
 
     def test_next_record_number(self):
         redcap_interface_object = REDCapInterface(isdev=True)
@@ -175,7 +178,6 @@ class TestREDCap(TestCase):
 
         version_number = redcap_interface_object.version()
         self.assertEqual(version_number, TestREDCap.api_version_string)
-        pass
 
     def test_single_record_retrieval(self):
         redcap_interface_object = REDCapInterface(isdev=True)
