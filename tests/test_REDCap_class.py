@@ -8,14 +8,53 @@ from utilities import convert_to_date
 
 
 class TestREDCap(TestCase):
+    """
+    Class used for testing the REDCapInterface class.
 
+    ...
+
+    Attributes
+    ----------
+    api_version_string : str
+        Set to the expected REDCap API version.
+    known_fake_record_number : int
+        The record we inserted into the DEV database
+        that--when we see it--that confirms we're really in the DEV database.
+
+    Methods
+    -------
+    test_bulk_record_retrieval()
+        Tests retrieving ALL the records from our REDCap database.
+    test_create_one_record()
+        Tests creating one record from fake data.
+    test_create_multiple_records()
+        Tests creating several records.
+    test_date_conversion()
+        Tests many formats of date/time string data.
+    test_delete_record()
+        Tests method to delete a record.
+    test_exists()
+        Tests method that asks database whether given record exists.
+    test_last_record_number()
+        Tests method last_record_number() in both single and multiple modes.
+    test_multiple_record_retrieval()
+        Tests the retrieve() method using a list of desired records.
+    test_next_record_number()
+        Tests method that asks for next unused record number.
+    test_object_instantiation()
+        Tests the __init__ method of the REDCapInterface class.
+    test_single_record_retrieval()
+        Tests retrieving a single record.
+    test_update_record()
+        Tests updating a given record.
+    """
     # We loaded a known fake patient name into this record number.
     # When we read that name, we can be sure we're looking at the DEV database.
     # Accordingly, when deleting or updating records in test, we do NOT want
     # to touch that special record. So we'll provide its record number to
     # the last_record_number() method to specify that number is to be avoided.
-    known_fake_record_number = 6393740
     api_version_string = "10.6.21"
+    known_fake_record_number = 6393740
 
     def test_bulk_record_retrieval(self):
         redcap_interface_object = REDCapInterface(isdev=True)
@@ -33,7 +72,7 @@ class TestREDCap(TestCase):
         self.assertTrue(redcap_interface_object.create(None) is None)
         self.assertFalse(redcap_interface_object.create("should not work"))
         next_study_id = redcap_interface_object.next_record_number()
-        record = self.create_fake_record(next_study_id)
+        record = self.__create_fake_record(next_study_id)
         self.assertTrue(redcap_interface_object.create(record))
 
     def test_create_multiple_records(self):
@@ -43,7 +82,7 @@ class TestREDCap(TestCase):
 
         for record_index in range(num_records_to_create):
             next_study_id = redcap_interface_object.next_record_number()
-            record = self.create_fake_record(next_study_id)
+            record = self.__create_fake_record(next_study_id)
             success &= redcap_interface_object.create(record)
 
         self.assertTrue(success)
@@ -231,6 +270,30 @@ class TestREDCap(TestCase):
             "study_id": str(last_record_number),
             "date_of_last_activity": right_now_string,
         }
+        # Test with dictionary as input.
+        self.assertTrue(redcap_interface_object.update(new_info))
+
+        # Check that the date_of_last_activity field was really updated.
+        updated_record = redcap_interface_object.retrieve(last_record_number)
+        self.assertTrue(
+            updated_record is not None and isinstance(updated_record, pd.DataFrame),
+            "Unable to retrieve updated record.",
+        )
+        self.assertTrue(
+            "date_of_last_activity" in updated_record,
+            "Unable to find 'date_of_last_activity' in updated record.",
+        )
+        retrieved_datestring = updated_record["date_of_last_activity"][0]
+        self.assertEqual(
+            right_now_string, retrieved_datestring, "Record was not updated."
+        )
+
+        # Test again with dataframe input.
+        right_now_string = datetime.strftime(right_now, "%Y-%m-%d")
+        new_info = {
+            "study_id": str(last_record_number),
+            "date_of_last_activity": right_now_string,
+        }
         new_info_df = pd.DataFrame(data=new_info, index=[0])
         self.assertTrue(redcap_interface_object.update(new_info_df))
 
@@ -249,6 +312,7 @@ class TestREDCap(TestCase):
             right_now_string, retrieved_datestring, "Record was not updated."
         )
 
+        # Test inputs that should raise errors.
         with self.assertRaises(TypeError):
             redcap_interface_object.update("should throw error")
 
@@ -264,7 +328,7 @@ class TestREDCap(TestCase):
         )
 
     @staticmethod
-    def create_fake_record(next_study_id):
+    def __create_fake_record(next_study_id):
         fake = Faker()
         birthdate = fake.date_of_birth(minimum_age=18, maximum_age=115)
         primary_consent_date = fake.date_between(birthdate)

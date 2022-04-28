@@ -3,6 +3,28 @@ import re
 
 
 def convert_to_date(date_string):
+    """
+        Convert strings to datetime objects.
+
+        Converts string like "Jan 31, 1970" to datetime.datetime(1970, 1, 31, 0, 0).
+        Attempts to cover every format variation we've seen in input data.
+
+        Parameters
+        ----------
+        date_string : str
+            String of date and (possibly) time information.
+
+        Return
+        -------
+        datetime.datetime
+            Value contained in the input date/time string.
+
+        Examples
+        --------
+        >>> d = convert_to_date("Apr 28, 2022")
+        >>> d
+    datetime.datetime(2022, 4, 28, 0, 0)
+    """
     # Remove leading/trailing whitespace.
     date_string = date_string.strip()
 

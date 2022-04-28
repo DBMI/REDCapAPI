@@ -51,6 +51,15 @@ Use the `delete` method of the `REDCapInterface` class, specifying the record nu
     redcap_interface_object = REDCapInterface()
     redcap_interface_object.delete(record_number_to_delete)
 ### HELPER FUNCTIONS
+To determine whether a specific record is present in the database, use the `exists()` method:
+
+    from REDCap_API_interface import REDCapInterface
+
+
+    redcap_interface_object = REDCapInterface()
+
+    if redcap_interface_object.exists(record_number): ...
+
 To assist in creating a new record, look up the next available record number using the `next_record_number` method:
 
     from REDCap_API_interface import REDCapInterface
@@ -66,3 +75,11 @@ This `new_record_number` is guaranteed _not_ to exist. The highest record number
 
     redcap_interface_object = REDCapInterface()
     highest_record_number_in_use = redcap_interface_object.last_record_number()
+
+To check what software version is used in the REDCapAPI, use the `version` method:
+
+    from REDCap_API_interface import REDCapInterface
+
+
+    redcap_interface_object = REDCapInterface()
+    print(f"Version = {redcap_interface_object.version()}")

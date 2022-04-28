@@ -5,7 +5,66 @@ import requests
 
 
 class REDCapInterface:
+    """
+    Wrapper class around the REDCap API.
+
+    ...
+
+    Attributes
+    ----------
+    no public attributes
+
+    Methods (starting in CRUD order)
+    -------
+    create(data_records)
+        Inserts new records from a dict, list of dicts or a dataframe.
+        Assumes user has included the study_id in each new record.
+    retrieve()
+        When called without argument, retrieves ALL the records in the database.
+    retrieve(record_numbers)
+        When called with either a single record number or a list of numbers,
+        retrieves those records.
+    update(data_record)
+        Overwrites the existing record at the study_id record number in the argument dict or dataframe.
+        If there is no existing record with that study_id, creates a new record.
+        Only overwrites the properties present in the input argument.
+    delete(record_number)
+        Deletes the data record at the specified study_id value.
+    exists(record_number)
+        Returns whether the specified record number exists in the database.
+    last_record_number()
+        Returns the highest study_id value present in the database.
+    next_record_number()
+        Returns the next unused study_id value; used in creating new record.
+    version()
+        Returns the version number of the REDCap API in use.
+    """
+
     def __init__(self, isdev=False):
+        """
+        Create instance of `REDCapInterface` class.
+
+        Assumes using production data, but can be created with isdev=True to
+        point to the development database.
+        Gets database token from
+
+        Parameters
+        ----------
+        isdev : bool, optional
+            Set when using development database (default is False)
+
+        Return
+        -------
+        none; instantiates object
+
+        Examples
+        --------
+        from REDCap_API_interface import REDCapInterface
+
+
+        production_redcap_interface_object = REDCapInterface()
+        development_redcap_interface_object = REDCapInterface(isdev=True)
+        """
         self.__api_uri = None
         self.__capmc_token = None
         self.__isdev = isdev
@@ -18,9 +77,26 @@ class REDCapInterface:
             )  # pragma: no cover
 
         # Lets all methods know that we're talking to the correct database.
-        self._valid = True
+        self.__valid = True
 
     def __build_data_pull(self, record_numbers=None, expanded_record=False):
+        """
+        Assemble dict used when retrieving data records.
+
+        Parameters
+        ----------
+        record_numbers : int, list
+            default is None (to retrieve ALL records)
+            or user can provide a single record number or a list of numbers
+        expanded_record : bool
+            If true, returns all fields. Otherwise, just returns study_id, dob,
+            primary_consent_date, core_participant_date, date_of_last_activity
+            default is False
+
+        Return
+        ------
+        dict
+        """
         # NOT specifying the "fields" list ==> give me ALL the fields.
         pull_dict = {
             "token": self.__capmc_token,
@@ -57,7 +133,28 @@ class REDCapInterface:
         return pull_dict
 
     def create(self, data_records):
-        if not self._valid:  # pragma: no cover
+        """
+        Insert new records into database.
+
+        Parameters
+        ----------
+        data_records : dict, dataframe
+            Must contain the new study_id desired.
+
+        Return
+        ------
+        bool
+
+        Examples
+        --------
+        from REDCap_API_interface import REDCapInterface
+
+
+        redcap_interface_object = REDCapInterface()
+        new_data = {'study_id': '12345', 'name': "Patient's Name", 'mrn': 000000, ...}
+        redcap_interface_object.create(new_data)
+        """
+        if not self.__valid:  # pragma: no cover
             return None
 
         if data_records is None:
@@ -84,7 +181,7 @@ class REDCapInterface:
         return r is not None and r.status_code == 200
 
     def delete(self, record_number):
-        if not self._valid:  # pragma: no cover
+        if not self.__valid:  # pragma: no cover
             return None
 
         if record_number is not None:
@@ -99,7 +196,29 @@ class REDCapInterface:
             return r is not None and r.status_code == 200
 
     def exists(self, record_number=None):
-        if not self._valid:  # pragma: no cover
+        """
+        Test whether given record number exists in the database.
+
+        Parameters
+        ----------
+        record_number : int
+            The value of the study_id field in the desired record.
+
+        Return
+        ------
+        bool
+            Was that record_number found?
+
+        Examples
+        --------
+        from REDCap_API_interface import REDCapInterface
+
+
+        redcap_interface_object = REDCapInterface()
+
+        if redcap_interface_object.exists(record_number): ...
+        """
+        if not self.__valid:  # pragma: no cover
             return None
 
         data_pull = None
@@ -121,6 +240,16 @@ class REDCapInterface:
 
     # Check for the presence of a known test record to be doubly sure we're connected to DEV_CAPMC_RECRUITMENT.
     def __known_test_record_present(self):
+        """
+        Test whether the known record inserted into the development database is present.
+
+        If present, this confirms that we are connected to the development
+        (and not the production) database.
+
+        Return
+        -------
+        bool
+        """
         test_record_number = 6393740  # pragma: no cover
         record = self.retrieve(test_record_number, expanded_record=True)
 
@@ -141,6 +270,28 @@ class REDCapInterface:
         )
 
     def last_record_number(self, except_for=None, number_desired=1):
+        """
+        Lookup the highest record number (study_id) present in the database.
+
+        Parameters
+        ----------
+        except_for : int, list
+            Record numbers to skip over.
+        number_desired : int, optional
+            How many numbers to return. default is 1
+
+        Return
+        -------
+        int or list of ints
+
+        Examples
+        --------
+        from REDCap_API_interface import REDCapInterface
+
+
+        redcap_interface_object = REDCapInterface()
+        highest_record_number_in_use = redcap_interface_object.last_record_number()
+        """
         last_valid_record_number = self.next_record_number() - 1
         valid_record_numbers_found = []
 
@@ -173,6 +324,23 @@ class REDCapInterface:
             return valid_record_numbers_found
 
     def next_record_number(self):
+        """
+        Lookup next available record number.
+
+        Used when creating a new record.
+
+        Return
+        ------
+        int
+
+        Examples
+        --------
+        from REDCap_API_interface import REDCapInterface
+
+
+        redcap_interface_object = REDCapInterface()
+        new_record_number = redcap_interface_object.next_record_number()
+        """
         fields = {
             "token": self.__capmc_token,
             "content": "generateNextRecordName",
@@ -202,7 +370,33 @@ class REDCapInterface:
         self.__capmc_token = config.get("CAPMC", "CAPMC_TOKEN")
 
     def retrieve(self, record_numbers=None, expanded_record=False):
-        # No need to check for self._valid here; it's always OK to retrieve records.
+        """
+        Get particular record(s) or all the records.
+
+        Parameters
+        ----------
+        record_numbers : int or list, optional
+            If specified, returns just that/those record(s).
+            If None or unspecified, returns all the records. default is None
+        expanded_record : bool, optional
+            If true, returns all the fields available. Otherwise, returns study_id, dob,
+            primary_consent_date, core_participant_date, date_of_last_activity
+            default is False
+
+        Return
+        ------
+        dataframe
+
+        Examples
+        --------
+        from REDCap_API_interface import REDCapInterface
+
+
+        redcap_interface_object = REDCapInterface()
+        df_all = redcap_interface_object.retrieve()
+        df_selected = redcap_interface_object.retrieve([1234, 2345])
+        """
+        # No need to check for self.__valid here; it's always OK to retrieve records.
         if record_numbers is not None:
             if isinstance(record_numbers, int):
                 record_numbers = [record_numbers]
@@ -224,19 +418,49 @@ class REDCapInterface:
         return dates_df
 
     def update(self, new_data_records=None):
-        if not self._valid:  # pragma: no cover
+        """
+        Change an existing record.
+
+        Since there is no native "update" method in the REDCap API, this wrapper method:
+        1. makes two copies of the existing record: one to modify, one as a backup
+        2. deletes the existing record
+        3. modifies the copy of the existing record
+        4. tries to insert the modified record into the database under the same study_id
+        5. if the insert fails, tries to restore the backup copy of the record
+           by inserting that into the database under the same study_id
+        6. if unable to insert the backup, throws an exception
+
+        Parameters
+        ----------
+        new_data_records : dict or dataframe
+
+        Return
+        ------
+        dataframe
+
+        Examples
+        --------
+            from REDCap_API_interface import REDCapInterface
+
+
+            redcap_interface_object = REDCapInterface()
+            new_info = {'study_id': str(record_number_to_update),
+                        'date_of_last_activity': right_now}
+            redcap_interface_object.update(new_info)
+        """
+        if not self.__valid:  # pragma: no cover
             return None
 
-        if isinstance(new_data_records, pd.DataFrame):
+        if isinstance(new_data_records, dict):
             new_data_records = [new_data_records]
+        elif isinstance(new_data_records, pd.DataFrame):
+            new_data_records = new_data_records.to_dict("records")
         elif not isinstance(new_data_records, list):
-            raise TypeError(
-                "Input is neither a single dict nor a list of dict objects."
-            )
+            raise TypeError("Input is neither a dict, list nor dataframe.")
 
         for new_data_record in new_data_records:
             # Get a copy of what's there now.
-            record_number = int(new_data_record["study_id"][0])
+            record_number = int(new_data_record["study_id"])
             existing_record = self.retrieve(record_number, expanded_record=True)
 
             if existing_record is None or len(existing_record) == 0:
@@ -256,10 +480,6 @@ class REDCapInterface:
                         if key != "study_id":
                             try:
                                 new_value = new_data_record[key]
-
-                                if isinstance(new_value, pd.Series):
-                                    new_value = new_value[0]
-
                                 draft_record[key] = new_value
 
                             except KeyError:  # pragma: no cover
@@ -286,6 +506,21 @@ class REDCapInterface:
             return True
 
     def version(self):
+        """
+        Ask REDCap API for its software version number.
+
+        Return
+        ------
+        str
+
+        Examples
+        --------
+        from REDCap_API_interface import REDCapInterface
+
+
+        redcap_interface_object = REDCapInterface()
+        print(f"Version = {redcap_interface_object.version()}")
+        """
         fields = {"token": self.__capmc_token, "content": "version"}
 
         r = requests.post(self.__api_uri, data=fields, verify=True)
