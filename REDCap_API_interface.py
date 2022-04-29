@@ -46,7 +46,7 @@ class REDCapInterface:
 
         Assumes using production data, but can be created with isdev=True to
         point to the development database.
-        Gets database token from
+        Gets database token from `F:\RedCap\secrets\config.key`
 
         Parameters
         ----------
@@ -59,11 +59,11 @@ class REDCapInterface:
 
         Examples
         --------
-        from REDCap_API_interface import REDCapInterface
-
-
-        production_redcap_interface_object = REDCapInterface()
-        development_redcap_interface_object = REDCapInterface(isdev=True)
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> production_redcap_interface_object = REDCapInterface()
+        >>> development_redcap_interface_object = REDCapInterface(isdev=True)
         """
         self.__api_uri = None
         self.__capmc_token = None
@@ -147,12 +147,12 @@ class REDCapInterface:
 
         Examples
         --------
-        from REDCap_API_interface import REDCapInterface
-
-
-        redcap_interface_object = REDCapInterface()
-        new_data = {'study_id': '12345', 'name': "Patient's Name", 'mrn': 000000, ...}
-        redcap_interface_object.create(new_data)
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> new_data = {'study_id': '12345', 'name': "Patient's Name", 'mrn': '000000', ...}
+        >>> redcap_interface_object.create(new_data)`
         """
         if not self.__valid:  # pragma: no cover
             return None
@@ -211,12 +211,12 @@ class REDCapInterface:
 
         Examples
         --------
-        from REDCap_API_interface import REDCapInterface
-
-
-        redcap_interface_object = REDCapInterface()
-
-        if redcap_interface_object.exists(record_number): ...
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>>
+        >>> if redcap_interface_object.exists(record_number): ...
         """
         if not self.__valid:  # pragma: no cover
             return None
@@ -286,11 +286,11 @@ class REDCapInterface:
 
         Examples
         --------
-        from REDCap_API_interface import REDCapInterface
-
-
-        redcap_interface_object = REDCapInterface()
-        highest_record_number_in_use = redcap_interface_object.last_record_number()
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> highest_record_number_in_use = redcap_interface_object.last_record_number()
         """
         last_valid_record_number = self.next_record_number() - 1
         valid_record_numbers_found = []
@@ -335,11 +335,11 @@ class REDCapInterface:
 
         Examples
         --------
-        from REDCap_API_interface import REDCapInterface
-
-
-        redcap_interface_object = REDCapInterface()
-        new_record_number = redcap_interface_object.next_record_number()
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> new_record_number = redcap_interface_object.next_record_number()
         """
         fields = {
             "token": self.__capmc_token,
@@ -389,12 +389,12 @@ class REDCapInterface:
 
         Examples
         --------
-        from REDCap_API_interface import REDCapInterface
-
-
-        redcap_interface_object = REDCapInterface()
-        df_all = redcap_interface_object.retrieve()
-        df_selected = redcap_interface_object.retrieve([1234, 2345])
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> df_all = redcap_interface_object.retrieve()
+        >>> df_selected = redcap_interface_object.retrieve([1234, 2345])
         """
         # No need to check for self.__valid here; it's always OK to retrieve records.
         if record_numbers is not None:
@@ -440,13 +440,13 @@ class REDCapInterface:
 
         Examples
         --------
-            from REDCap_API_interface import REDCapInterface
-
-
-            redcap_interface_object = REDCapInterface()
-            new_info = {'study_id': str(record_number_to_update),
-                        'date_of_last_activity': right_now}
-            redcap_interface_object.update(new_info)
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> new_info = {'study_id': str(record_number_to_update),
+        >>>             'date_of_last_activity': right_now}
+        >>> redcap_interface_object.update(new_info)
         """
         if not self.__valid:  # pragma: no cover
             return None
@@ -515,11 +515,11 @@ class REDCapInterface:
 
         Examples
         --------
-        from REDCap_API_interface import REDCapInterface
-
-
-        redcap_interface_object = REDCapInterface()
-        print(f"Version = {redcap_interface_object.version()}")
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> print(f"Version = {redcap_interface_object.version()}")
         """
         fields = {"token": self.__capmc_token, "content": "version"}
 

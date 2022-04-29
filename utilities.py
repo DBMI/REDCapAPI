@@ -23,7 +23,7 @@ def convert_to_date(date_string):
         --------
         >>> d = convert_to_date("Apr 28, 2022")
         >>> d
-    datetime.datetime(2022, 4, 28, 0, 0)
+        >>> datetime.datetime(2022, 4, 28, 0, 0)
     """
     # Remove leading/trailing whitespace.
     date_string = date_string.strip()
