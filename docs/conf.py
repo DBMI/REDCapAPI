@@ -12,6 +12,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('.'))
 #  From https://sw.cs.wwu.edu/~tuora/aarontuor/materials/pythonDist.html
 sys.path.append(os.path.abspath('sphinxext'))  # lets python know where to find your sphinx extensions
@@ -20,8 +21,6 @@ html_theme = "sphinx_rtd_theme"  # Nice clean theme.
 html_logo = '../pictures/REDCap.png'  # adds logo to documents pages.
 
 # -- Project information -----------------------------------------------------
-import sphinx.ext.napoleon
-
 project = 'REDCap API Interface'
 copyright = '2022, DBMI Team'
 author = 'DBMI Team'
@@ -37,6 +36,8 @@ release = '0.1'
 # ones.
 extensions = [
     'sphinx.ext.napoleon',
+    'sphinx_markdown_builder',
+    'sphinx.ext.autodoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

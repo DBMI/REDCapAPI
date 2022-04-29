@@ -181,6 +181,26 @@ class REDCapInterface:
         return r is not None and r.status_code == 200
 
     def delete(self, record_number):
+        """
+        Insert new records into database.
+
+        Parameters
+        ----------
+        record_number : int
+            The study_id of the record to delete.
+
+        Return
+        ------
+        bool
+
+        Examples
+        --------
+        >>> from REDCap_API_interface import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> redcap_interface_object.delete(12345)`
+        """
         if not self.__valid:  # pragma: no cover
             return None
 
@@ -426,8 +446,7 @@ class REDCapInterface:
         2. deletes the existing record
         3. modifies the copy of the existing record
         4. tries to insert the modified record into the database under the same study_id
-        5. if the insert fails, tries to restore the backup copy of the record
-           by inserting that into the database under the same study_id
+        5. if the insert fails, tries to restore the backup copy of the record by inserting that into the database under the same study_id
         6. if unable to insert the backup, throws an exception
 
         Parameters
