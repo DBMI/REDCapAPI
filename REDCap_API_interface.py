@@ -51,11 +51,11 @@ class REDCapInterface:
         Parameters
         ----------
         isdev : bool, optional
-            Set when using development database (default is False)
+            Set to True when using development database (default is False)
 
         Return
         -------
-        none; instantiates object
+        none; Instantiates object
 
         Examples
         --------
