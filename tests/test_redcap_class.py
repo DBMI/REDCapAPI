@@ -1,8 +1,16 @@
-import pandas as pd
-import re
+"""
+Module test_redcap_class.py, which exists to support automated
+testing of the REDCapInterface class.
+
+Classes
+-------
+TestREDCap
+"""
 from datetime import datetime
-from faker import Faker
 from unittest import TestCase
+import re
+import pandas as pd
+from faker import Faker
 from REDCap_API_interface import REDCapInterface
 from utilities import convert_to_date
 
@@ -48,6 +56,7 @@ class TestREDCap(TestCase):
     test_update_record()
         Tests updating a given record.
     """
+
     # We loaded a known fake patient name into this record number.
     # When we read that name, we can be sure we're looking at the DEV database.
     # Accordingly, when deleting or updating records in test, we do NOT want
@@ -57,17 +66,32 @@ class TestREDCap(TestCase):
     known_fake_record_number = 6393740
 
     def test_bulk_record_retrieval(self):
+        """
+        Test retrieving ALL records.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
-        df = redcap_interface_object.retrieve()
-        message = "Unable to retrieve data frame from REDCap."
-        self.assertIsInstance(df, pd.DataFrame, message)
-        num_elements_returned: int = df.shape[0]
+        retrieved_df = redcap_interface_object.retrieve()
+        self.assertIsInstance(
+            retrieved_df, pd.DataFrame, "Unable to retrieve data frame from REDCap."
+        )
+        num_elements_returned: int = retrieved_df.shape[0]
         message = (
             f"Expected many elements in dataframe but received {num_elements_returned}."
         )
         self.assertGreater(num_elements_returned, 2, message)
 
     def test_create_one_record(self):
+        """
+        Test creating ONE record.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         self.assertTrue(redcap_interface_object.create(None) is None)
         self.assertFalse(redcap_interface_object.create("should not work"))
@@ -76,11 +100,18 @@ class TestREDCap(TestCase):
         self.assertTrue(redcap_interface_object.create(record))
 
     def test_create_multiple_records(self):
+        """
+        Test creating SEVERAL records.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         num_records_to_create = 3
         success = True
 
-        for record_index in range(num_records_to_create):
+        for __ in range(num_records_to_create):
             next_study_id = redcap_interface_object.next_record_number()
             record = self.__create_fake_record(next_study_id)
             success &= redcap_interface_object.create(record)
@@ -88,6 +119,13 @@ class TestREDCap(TestCase):
         self.assertTrue(success)
 
     def test_date_conversion(self):
+        """
+        Test converting strings to dates.
+
+        Return
+        ------
+        bool
+        """
         date_value_true = datetime.strptime("31/01/1970", "%d/%m/%Y")
         datetime_value_true = datetime.strptime(
             "31/01/1970 12:05:10", "%d/%m/%Y %H:%M:%S"
@@ -151,6 +189,13 @@ class TestREDCap(TestCase):
         self.assertTrue(date_string_converted is None)
 
     def test_delete_record(self):
+        """
+        Test deleting one record.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         last_record_number = redcap_interface_object.last_record_number(
             except_for=TestREDCap.known_fake_record_number
@@ -165,6 +210,13 @@ class TestREDCap(TestCase):
         )
 
     def test_exists(self):
+        """
+        Test method for querying whether given record is present.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         last_record_number = redcap_interface_object.last_record_number()
         self.assertTrue(redcap_interface_object.exists(last_record_number))
@@ -176,6 +228,13 @@ class TestREDCap(TestCase):
         self.assertFalse(redcap_interface_object.exists(-1))
 
     def test_last_record_number(self):
+        """
+        Test method for looking up highest used record number.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         last_valid_number = redcap_interface_object.last_record_number()
         self.assertTrue(isinstance(last_valid_number, int))
@@ -196,13 +255,20 @@ class TestREDCap(TestCase):
         self.assertEqual(len(last_valid_number), 2)
 
     def test_multiple_record_retrieval(self):
+        """
+        Test retrieving SEVERAL records.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         two_valid_numbers = redcap_interface_object.last_record_number(number_desired=2)
-        df = redcap_interface_object.retrieve(two_valid_numbers)
+        retrieved_df = redcap_interface_object.retrieve(two_valid_numbers)
         self.assertIsInstance(
-            df, pd.DataFrame, "Unable to retrieve data frame from REDCap."
+            retrieved_df, pd.DataFrame, "Unable to retrieve data frame from REDCap."
         )
-        num_elements_returned: int = df.shape[0]
+        num_elements_returned: int = retrieved_df.shape[0]
         self.assertEqual(
             num_elements_returned,
             2,
@@ -210,11 +276,25 @@ class TestREDCap(TestCase):
         )
 
     def test_next_record_number(self):
+        """
+        Test method for determining which is next unused record number.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         next_number = redcap_interface_object.next_record_number()
         self.assertTrue(isinstance(next_number, int))
 
     def test_object_instantiation(self):
+        """
+        Test creating REDCapInterface object.
+
+        Return
+        ------
+        bool
+        """
         #   This is the ONLY time in testing that we'll instantiate a REDCapInterface object
         #    WITHOUT the isdev flag set. It's to ensure we CAN read the production token.
         production_redcap_interface_object = REDCapInterface(isdev=False)
@@ -238,13 +318,20 @@ class TestREDCap(TestCase):
         self.assertEqual(version_number, TestREDCap.api_version_string)
 
     def test_single_record_retrieval(self):
+        """
+        Test retrieving ONE record.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         last_record_number = redcap_interface_object.last_record_number()
-        df = redcap_interface_object.retrieve(last_record_number)
+        retrieved_df = redcap_interface_object.retrieve(last_record_number)
         self.assertIsInstance(
-            df, pd.DataFrame, "Unable to retrieve data frame from REDCap."
+            retrieved_df, pd.DataFrame, "Unable to retrieve data frame from REDCap."
         )
-        num_elements_returned: int = df.shape[0]
+        num_elements_returned: int = retrieved_df.shape[0]
         self.assertEqual(
             num_elements_returned,
             1,
@@ -256,6 +343,13 @@ class TestREDCap(TestCase):
             redcap_interface_object.retrieve(-1)
 
     def test_update_record(self):
+        """
+        Test updating given record.
+
+        Return
+        ------
+        bool
+        """
         redcap_interface_object = REDCapInterface(isdev=True)
         last_record_number = redcap_interface_object.last_record_number(
             except_for=TestREDCap.known_fake_record_number
@@ -329,6 +423,17 @@ class TestREDCap(TestCase):
 
     @staticmethod
     def __create_fake_record(next_study_id):
+        """
+        Synthesize data for testing.
+
+        Paramters
+        ---------
+        next_study_id :   int
+
+        Return
+        ------
+        dict
+        """
         fake = Faker()
         birthdate = fake.date_of_birth(minimum_age=18, maximum_age=115)
         primary_consent_date = fake.date_between(birthdate)
