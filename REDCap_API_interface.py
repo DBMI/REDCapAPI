@@ -46,7 +46,7 @@ class REDCapInterface:
 
         Assumes using production data, but can be created with isdev=True to
         point to the development database.
-        Gets database token from `F:\RedCap\secrets\config.key`
+        Gets database token from "F:\RedCap\secrets\config.key"
 
         Parameters
         ----------
@@ -152,7 +152,7 @@ class REDCapInterface:
         >>>
         >>> redcap_interface_object = REDCapInterface()
         >>> new_data = {'study_id': '12345', 'name': "Patient's Name", 'mrn': '000000', ...}
-        >>> redcap_interface_object.create(new_data)`
+        >>> redcap_interface_object.create(new_data)
         """
         if not self.__valid:  # pragma: no cover
             return None
@@ -199,7 +199,7 @@ class REDCapInterface:
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
-        >>> redcap_interface_object.delete(12345)`
+        >>> redcap_interface_object.delete(12345)
         """
         if not self.__valid:  # pragma: no cover
             return None

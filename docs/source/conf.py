@@ -12,15 +12,14 @@
 #
 import os
 import sys
-
-sys.path.insert(0, os.path.abspath('.'))
-#  From https://sw.cs.wwu.edu/~tuora/aarontuor/materials/pythonDist.html
-sys.path.append(os.path.abspath('sphinxext'))  # lets python know where to find your sphinx extensions
-sys.path.append(os.path.abspath('../'))  # This is so sphinx knows where to find your module
+sys.path.insert(0, os.path.abspath('..'))
+sys.path.append(os.path.abspath('../../'))  # This is so sphinx knows where to find your module
 html_theme = "sphinx_rtd_theme"  # Nice clean theme.
-html_logo = '../pictures/REDCap.png'  # adds logo to documents pages.
+html_logo = '../../pictures/REDCap.png'  # adds logo to documents pages.
+
 
 # -- Project information -----------------------------------------------------
+
 project = 'REDCap API Interface'
 copyright = '2022, DBMI Team'
 author = 'DBMI Team'
@@ -38,6 +37,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx_markdown_builder',
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -46,7 +46,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = []
 
 
 # -- Options for HTML output -------------------------------------------------
