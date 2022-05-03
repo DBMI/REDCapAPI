@@ -1,3 +1,6 @@
+"""
+Module utilities. Provides place for needed static methods.
+"""
 from datetime import datetime
 import re
 
@@ -31,36 +34,70 @@ def convert_to_date(date_string):
     # Remove commas so that "Jan 31, 1970" becomes "Jan 31 1970".
     date_string = date_string.replace(",", "")
 
-    if date_string == "" or len(date_string) < 1:
+    # Reject if input is empty or does not contain any digits.
+    if date_string == "" or len(date_string) < 1 or not re.search(r"\d", date_string):
         return None
-    elif not re.search(r"\d", date_string):  # if there are NO digits
-        return None
-    elif re.match(r"\d{1,2}/\d{1,2}/\d{4}", date_string):  # Match 01/31/1970
-        return datetime.strptime(date_string, "%m/%d/%Y")
-    elif re.match(r"\d{1,2}/\d{1,2}/\d{2}", date_string):  # Match 01/31/70
-        return datetime.strptime(date_string, "%m/%d/%y")
-    elif re.match(r"\d{1,2}-\d{1,2}-\d{4}", date_string):  # Match 01-31-1970
-        return datetime.strptime(date_string, "%m-%d-%Y")
-    elif re.match(r"\d{1,2}-\d{1,2}-\d{2}", date_string):  # Match 01-31-70
-        try:
-            return datetime.strptime(date_string, "%m-%d-%y")
-        except ValueError:
-            return datetime.strptime(date_string, "%y-%m-%d")
 
-    elif re.match(
-        r"\d{4}-\d{1,2}-\d{1,2}\s+\d{2}:\d{2}:\d{2}", date_string
-    ):  # Match 1970-01-31 12:05:10
-        return datetime.strptime(date_string, "%Y-%m-%d  %H:%M:%S")
-    elif re.match(r"\d{4}-\d{1,2}-\d{1,2}", date_string):  # Match 1970-01-31
-        return datetime.strptime(date_string, "%Y-%m-%d")
-    elif re.match(r"\d{1,2}\s+[A-Z][a-z]{2}\s+\d{4}", date_string):  # Match 31 Jan 1970
-        return datetime.strptime(date_string, "%d %b %Y")
-    elif re.match(
-        r"[A-Z][a-z]{2}\s+\d{1,2}\s+\d{4} 12:00AM", date_string
-    ):  # Match Jan 31 1970 12:00AM
-        return datetime.strptime(date_string.replace(" 12:00AM", ""), "%b %d %Y")
-    elif re.match(r"[A-Z][a-z]{2}\s?\d{1,2}\s+\d{4}", date_string):  # Match Jan 31 1970
-        return datetime.strptime(date_string, "%b %d %Y")
-    else:
-        print(f'WE HAVE A PROBLEM WITH THIS DATE: "{date_string}"')
-        return None
+    # Build a list of tuples: (regex pattern, format string).
+    date_translations = []
+
+    # Match 01/31/1970, 01-31-1970
+    pattern = re.compile(r"(?P<month>\d{1,2})[/-](?P<day>\d{1,2})[/-](?P<year>\d{4})")
+    four_digit_year_format = "%Y-%m-%d"
+    date_translations.append((pattern, four_digit_year_format))
+
+    # Match 01/31/70 or 01-31-70
+    pattern = re.compile(r"(?P<month>\d{1,2})[/-](?P<day>\d{1,2})[/-](?P<year>\d{2})")
+    two_digit_year_format = "%y-%m-%d"
+    date_translations.append((pattern, two_digit_year_format))
+
+    # Match 1970/01/31 12:05:10 or 1970-01-31 12:05:10
+    pattern = re.compile(r"(?P<year>\d{4})[/-](?P<month>\d{1,2})[/-](?P<day>\d{1,2})"
+                         r"\s+(?P<hour>\d{2}):(?P<min>\d{2}):(?P<sec>\d{2})")
+    date_and_time_format = "%Y-%m-%d  %H:%M:%S"
+    date_translations.append((pattern, date_and_time_format))
+
+    # Match 1970-01-31
+    pattern = re.compile(r"(?P<year>\d{4})[/-](?P<month>[/-]\d{1,2})[/-](?P<day>\d{1,2})")
+    date_translations.append((pattern, four_digit_year_format))
+
+    # Match 70/01/31 or 70-01-31
+    pattern = re.compile(r"(?P<year>\d{2})[/-](?P<month>\d{1,2})[/-](?P<day>\d{1,2})")
+    date_translations.append((pattern, two_digit_year_format))
+
+    # Match 31 Jan 1970
+    pattern = re.compile(r"(?P<day>\d{1,2})\s+(?P<month>[A-Z][a-z]{2})\s+(?P<year>\d{4})")
+    y4_mon_d_format = "%Y-%b-%d"
+    date_translations.append((pattern, y4_mon_d_format))
+
+    # Match Jan 31 1970
+    pattern = re.compile(r"(?P<month>[A-Z][a-z]{2})\s?(?P<day>\d{1,2})\s+(?P<year>\d{4})")
+    date_translations.append((pattern, y4_mon_d_format))
+
+    for pattern, datetime_format in date_translations:
+        search_result = pattern.search(date_string)
+
+        if search_result:
+            # First try creating datetime including hour:min:sec, which might not be present.
+            try:
+                return datetime.strptime(search_result.group('year') +
+                                         '-' + search_result.group('month') +
+                                         '-' + search_result.group('day') +
+                                         ' ' + search_result.group('hour') +
+                                         ':' + search_result.group('min') +
+                                         ':' + search_result.group('sec'),
+                                         datetime_format)
+            except ValueError:
+                pass
+            except IndexError:
+                # Fallback to just date.
+                try:
+                    return datetime.strptime(search_result.group('year') +
+                                             '-' + search_result.group('month') +
+                                             '-' + search_result.group('day'),
+                                             datetime_format)
+                except ValueError:
+                    pass
+
+    print(f'WE HAVE A PROBLEM WITH THIS DATE: "{date_string}"')
+    return None

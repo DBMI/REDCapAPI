@@ -7,13 +7,13 @@ You will need to generate a token for yourself in the CAPMC project in REDCap. C
 Copy the file `config-example.key` to `F:\RedCap\secrets\config.key`. Put your token into `config.key` and save the file.
 
 ### CREATE
-To create a new record, instantiate an object of the `REDCapInterface` class and call its `create` method, supplying a `dict` or `pandas.DataFrame` object: 
+To create a new record, instantiate an object of the `REDCapInterface` class and call its `create` method, supplying a `dict` or `pandas.DataFrame` object:
 
     from REDCap_API_interface import REDCapInterface
 
-    
+
     redcap_interface_object = REDCapInterface()
-    new_data = {'study_id': '12345', 'name': "Patient's Name", 'mrn': 000000, ...} 
+    new_data = {'study_id': '12345', 'name': "Patient's Name", 'mrn': 000000, ...}
     redcap_interface_object.create(new_data)
 
 ### RETRIEVE
@@ -21,7 +21,7 @@ To retrieve _all_ records, instantiate an object of the `REDCapInterface` class 
 
     from REDCap_API_interface import REDCapInterface
 
-    
+
     redcap_interface_object = REDCapInterface()
     df = redcap_interface_object.retrieve()
 
@@ -33,7 +33,7 @@ Or to retrieve just one record by record number:
 
     df = redcap_interface_object.retrieve(42)
 ### UPDATE
-To update an existing record, instantiate an object of the `REDCapInterface` class and call its `update` method, supplying a `dict` or `pandas.DataFrame` object containing the `study_id` of the record to be modified, along with any updated fields.: 
+To update an existing record, instantiate an object of the `REDCapInterface` class and call its `update` method, supplying a `dict` or `pandas.DataFrame` object containing the `study_id` of the record to be modified, along with any updated fields.:
 
     from REDCap_API_interface import REDCapInterface
 

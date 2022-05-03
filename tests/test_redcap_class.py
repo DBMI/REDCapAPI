@@ -11,7 +11,7 @@ from unittest import TestCase
 import re
 import pandas as pd
 from faker import Faker
-from REDCap_API_interface import REDCapInterface
+from redcap_api_interface import REDCapInterface
 from utilities import convert_to_date
 
 
@@ -207,6 +207,12 @@ class TestREDCap(TestCase):
         self.assertTrue(
             redcap_interface_object.delete(last_record_number),
             "Unable to delete object.",
+        )
+
+        # Ensure calling "delete" with no record number returns None.
+        self.assertTrue(
+            redcap_interface_object.delete(None) is None,
+            "Get the wrong answer back when supplying null record number.",
         )
 
     def test_exists(self):
