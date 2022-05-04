@@ -530,10 +530,10 @@ class REDCapInterface:
             return None
 
         if not isinstance(new_data_record, dict):
-            raise TypeError("Input is not a dict.")
+            raise TypeError("Input is not a dict.")  # pragma: no cover
 
         if not isinstance(existing_record, pd.DataFrame):
-            raise TypeError("Input is not a dataframe.")
+            raise TypeError("Input is not a dataframe.")  # pragma: no cover
 
         # Delete existing record so that we'll be allowed to
         #  insert a record with the same record number.

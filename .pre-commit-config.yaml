@@ -22,10 +22,7 @@ repos:
         entry: pylint
         types: [python]
         language: system
-      - id: unittest
-        name: unittest
-        entry: python -m unittest discover
+      - id: coverage
+        name: coverage
+        entry: sh ./run_coverage.sh
         language: system
-        'types': [python]
-        pass_filenames: false
-        stages: [commit]

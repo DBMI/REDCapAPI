@@ -103,7 +103,7 @@ def convert_to_date(date_string):
                     datetime_format,
                 )
             except ValueError:
-                pass
+                pass  # pragma: no cover
             except IndexError:
                 # Fallback to just date.
                 try:
