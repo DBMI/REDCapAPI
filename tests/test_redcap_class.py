@@ -465,3 +465,7 @@ class TestREDCap(TestCase):
         }
 
         return record
+
+
+if __name__ == "__main__":  # pragma: no cover
+    pass

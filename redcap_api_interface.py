@@ -436,7 +436,11 @@ class REDCapInterface:
         response = requests.post(self.__api_uri, data=data_pull, verify=True)
 
         try:
-            if not response or response.status_code != 200 or "study_id" not in response.text:
+            if (
+                not response
+                or response.status_code != 200
+                or "study_id" not in response.text
+            ):
                 raise RuntimeError("Unable to query REDCap API for records.")
         except TypeError as error:  # pragma: no cover
             raise RuntimeError("Unable to parse query response.") from error
@@ -566,7 +570,9 @@ class REDCapInterface:
                 # We deleted the original record,
                 # are unable to insert the modified record,
                 # AND can't restore the deleted record.
-                raise RuntimeError("Unable to restore deleted record.")  # pragma: no cover
+                raise RuntimeError(
+                    "Unable to restore deleted record."
+                )  # pragma: no cover
 
         return True
 

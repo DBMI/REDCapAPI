@@ -1,3 +1,4 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ## How to use `REDCapInterface` class to connect with REDCap API
 
 You will need to generate a token for yourself in the CAPMC project in REDCap. Click _API_ in the REDCap menu:

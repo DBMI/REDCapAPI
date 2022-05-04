@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v4.2.0
     hooks:
       - id: check-docstring-first
       - id: check-merge-conflict
@@ -12,17 +12,20 @@ repos:
     rev: 22.3.0
     hooks:
       - id: black
+        name: black
+        entry: black
+        language: system
   - repo: local
     hooks:
       - id: pylint
         name: pylint
         entry: pylint
-        language: python
         types: [python]
+        language: system
       - id: unittest
         name: unittest
         entry: python -m unittest discover
-        language: python
+        language: system
         'types': [python]
         pass_filenames: false
         stages: [commit]
