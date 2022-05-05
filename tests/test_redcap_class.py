@@ -226,12 +226,14 @@ class TestREDCap(TestCase):
         redcap_interface_object = REDCapInterface(isdev=True)
         last_record_number = redcap_interface_object.last_record_number()
         self.assertTrue(redcap_interface_object.exists(last_record_number))
-        self.assertFalse(redcap_interface_object.exists(None))
 
+        # Cases that should result in False.
+        self.assertFalse(redcap_interface_object.exists(None))
+        self.assertFalse(redcap_interface_object.exists(-1))
+
+        # Case that should throw exception.
         with self.assertRaises(TypeError):
             redcap_interface_object.exists("should throw error")
-
-        self.assertFalse(redcap_interface_object.exists(-1))
 
     def test_last_record_number(self):
         """
@@ -425,6 +427,7 @@ class TestREDCap(TestCase):
         self.assertEqual(
             "Unable to update; original record was restored.",
             str(error_raised.exception),
+            "Did not receive message that original record was restored.",
         )
 
     @staticmethod

@@ -252,8 +252,8 @@ class REDCapInterface:
         if record_number is not None:
             if isinstance(record_number, int):
                 data_pull = self.__build_data_pull([record_number])
-            elif not isinstance(record_number, list):
-                raise TypeError("Input 'record_number' is neither int nor list.")
+            else:
+                raise TypeError("Input 'record_number' is not an int.")
 
             response = requests.post(self.__api_uri, data=data_pull, verify=True)
 
@@ -486,8 +486,8 @@ class REDCapInterface:
             new_data_records = [new_data_records]
         elif isinstance(new_data_records, pd.DataFrame):
             new_data_records = new_data_records.to_dict("records")
-        elif not isinstance(new_data_records, list):
-            raise TypeError("Input is neither a dict, list nor dataframe.")
+        else:
+            raise TypeError("Input is neither a dict nor a dataframe.")
 
         for new_data_record in new_data_records:
             # Get a copy of what's there now.
@@ -539,40 +539,38 @@ class REDCapInterface:
         #  insert a record with the same record number.
         record_number = int(new_data_record["study_id"])
 
-        if self.delete(record_number):
-            draft_record = existing_record.copy()
+        if not self.delete(record_number):  # pragma: no cover
+            raise RuntimeError(f"Unable to delete old record {record_number}.")
 
-            # Overwrite our copy of what's currently in REDCap
-            #  with whatever properties we've been given.
-            for key in new_data_record:
-                # Not allowed to update the primary key "study_id".
-                if key != "study_id":
-                    try:
-                        new_value = new_data_record[key]
-                        draft_record[key] = new_value
+        draft_record = existing_record.copy()
 
-                    except KeyError as error:  # pragma: no cover
-                        raise KeyError(
-                            f"Unable to update dataframe field {key}."
-                        ) from error
+        # Overwrite our copy of what's currently in REDCap
+        #  with whatever properties we've been given.
+        for key in new_data_record:
+            # Not allowed to update the primary key "study_id".
+            if key != "study_id":
+                try:
+                    new_value = new_data_record[key]
+                    draft_record[key] = new_value
 
-            # Push the modified record.
-            if not self.create(draft_record):
-                # If that didn't work, we need to put the original record back.
-                if self.create(existing_record):
-                    # Need to notify that update didn't work.
-                    # However, we restored the original record.
-                    raise RuntimeError(
-                        "Unable to update; original record was restored."
-                    )
+                except KeyError as error:  # pragma: no cover
+                    raise KeyError(
+                        f"Unable to update dataframe field {key}."
+                    ) from error
 
-                # Ok, now we have a problem.
-                # We deleted the original record,
-                # are unable to insert the modified record,
-                # AND can't restore the deleted record.
-                raise RuntimeError(
-                    "Unable to restore deleted record."
-                )  # pragma: no cover
+        # Push the modified record.
+        if not self.create(draft_record):
+            # If that didn't work, we need to put the original record back.
+            if self.create(existing_record):
+                # Need to notify that update didn't work.
+                # However, we restored the original record.
+                raise RuntimeError("Unable to update; original record was restored.")
+
+            # Ok, now we have a problem.
+            # We deleted the original record,
+            # are unable to insert the modified record,
+            # AND can't restore the deleted record.
+            raise RuntimeError("Unable to restore deleted record.")  # pragma: no cover
 
         return True
 

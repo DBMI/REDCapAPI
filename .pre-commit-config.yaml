@@ -19,7 +19,7 @@ repos:
     hooks:
       - id: pylint
         name: pylint
-        entry: pylint
+        entry: sh ./run_pylint.sh
         types: [python]
         language: system
       - id: coverage
