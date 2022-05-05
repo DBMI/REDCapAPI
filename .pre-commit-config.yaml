@@ -26,3 +26,7 @@ repos:
         name: coverage
         entry: sh ./run_coverage.sh
         language: system
+      - id: last_commit_date
+        name: last_commit_date
+        entry: sh ./run_last_commit.sh
+        language: system
