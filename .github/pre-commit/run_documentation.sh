@@ -1,0 +1,2 @@
+sphinx-apidoc -f -o C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCap_API_Calls\\docs\\source C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCap_API_Calls
+sphinx-build -b html C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCap_API_Calls\\docs\\source C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCap_API_Calls\\docs\\build\\html
