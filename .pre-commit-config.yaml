@@ -26,6 +26,10 @@ repos:
         name: coverage
         entry: sh ./.github/pre-commit/run_coverage.sh
         language: system
+      - id: documentation
+        name: documentation
+        entry: sh ./.github/pre-commit/run_documentation.sh
+        language: system
       - id: last_commit_date
         name: last_commit_date
         entry: sh ./.github/pre-commit/run_last_commit.sh
