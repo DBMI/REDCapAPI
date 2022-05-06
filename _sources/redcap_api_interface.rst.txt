@@ -1,0 +1,7 @@
+redcap\_api\_interface module
+=============================
+
+.. automodule:: redcap_api_interface
+   :members:
+   :undoc-members:
+   :show-inheritance:
