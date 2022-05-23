@@ -2,10 +2,11 @@
 Module utilities. Provides place for needed static methods.
 """
 from datetime import datetime
+import logging
 import re
 
 
-def convert_to_date(date_string):
+def convert_to_date(date_string: str) -> datetime:
     """
     Convert strings to datetime objects.
 
@@ -28,6 +29,9 @@ def convert_to_date(date_string):
     >>> d
     >>> datetime.datetime(2022, 4, 28, 0, 0)
     """
+    log = logging.getLogger(__name__)
+    log.debug("Translating: '%s.'", date_string)
+
     # Remove leading/trailing whitespace.
     date_string = date_string.strip()
 
@@ -36,6 +40,7 @@ def convert_to_date(date_string):
 
     # Reject if input is empty or does not contain any digits.
     if date_string == "" or len(date_string) < 1 or not re.search(r"\d", date_string):
+        log.debug("Input contains no digits.")
         return None
 
     # Build a list of tuples: (regex pattern, format string).
@@ -118,7 +123,7 @@ def convert_to_date(date_string):
                 except ValueError:
                     pass
 
-    print(f'WE HAVE A PROBLEM WITH THIS DATE: "{date_string}"')
+    log.error('Unable to parse: "%s".', date_string)
     return None
 
 

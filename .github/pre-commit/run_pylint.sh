@@ -1,2 +1,3 @@
-SCORE=$(sh C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCap_API_Calls\\.github\\pre-commit\\pylint-compute-score.sh)"/10.00"
-anybadge -l pylint -v "$SCORE" --overwrite --file C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCap_API_Calls\\.github\\badges\\pylint-badge.svg 2=red 4=orange 8=yellow 10=green
+cd C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCap_API_Calls
+SCORE=$(sh .\\.github\\pre-commit\\pylint-compute-score.sh)"/10.00"
+anybadge -l pylint -v "$SCORE" --overwrite --file .\\.github\\badges\\pylint-badge.svg 2=red 4=orange 8=yellow 10=green
