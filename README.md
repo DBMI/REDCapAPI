@@ -4,18 +4,29 @@
 ![Last Commit Date](./.github/badges/last-commit-badge.svg?dummy=8484744)
 
 [GitHub Pages site](https://dbmi.github.io/REDCap_API_Calls/index.html)
-## How to use `REDCapInterface` class to connect with REDCap API
+# How to use `REDCapInterface` class to connect with REDCap API
 
-You will need to generate a token for yourself in the CAPMC project in REDCap. Click _API_ in the REDCap menu:
+## Obtaining a token
+You will need to generate a token for yourself in the CAPMC project in REDCap. Click _API_ in the REDCap menu...:
 
-![image info](./pictures/redcap.png)
+![image info](./pictures/select API.png)
+
+...and then click _Request API token_:
+
+![image info](./pictures/request token.png)
 
 Copy the file `config-example.key` to `F:\RedCap\secrets\config.key`. Put your token into `config.key` and save the file.
 
+## Installing the `dbmi_redcap` package
+`pip install git+https://github.com/DBMI/REDCAP_API_Calls.git`
+
+This will allow you to import the `REDCapInterface` class within python:
+`from dbmi_redcap import REDCapInterface`
+## Using the `REDCapInterface` Class
 ### CREATE
 To create a new record, instantiate an object of the `REDCapInterface` class and call its `create` method, supplying a `dict` or `pandas.DataFrame` object:
 
-    from REDCap_API_interface import REDCapInterface
+    from dbmi_redcap import REDCapInterface
 
 
     redcap_interface_object = REDCapInterface()
@@ -25,7 +36,7 @@ To create a new record, instantiate an object of the `REDCapInterface` class and
 ### RETRIEVE
 To retrieve _all_ records, instantiate an object of the `REDCapInterface` class and call its `retrieve` method with no records specified:
 
-    from REDCap_API_interface import REDCapInterface
+    from dbmi_redcap import REDCapInterface
 
 
     redcap_interface_object = REDCapInterface()
@@ -41,7 +52,7 @@ Or to retrieve just one record by record number:
 ### UPDATE
 To update an existing record, instantiate an object of the `REDCapInterface` class and call its `update` method, supplying a `dict` or `pandas.DataFrame` object containing the `study_id` of the record to be modified, along with any updated fields.:
 
-    from REDCap_API_interface import REDCapInterface
+    from dbmi_redcap import REDCapInterface
 
 
     redcap_interface_object = REDCapInterface()
@@ -51,7 +62,7 @@ To update an existing record, instantiate an object of the `REDCapInterface` cla
 ### DELETE
 Use the `delete` method of the `REDCapInterface` class, specifying the record number (`study_id`) of the record to be deleted:
 
-    from REDCap_API_interface import REDCapInterface
+    from dbmi_redcap import REDCapInterface
 
 
     redcap_interface_object = REDCapInterface()
@@ -59,7 +70,7 @@ Use the `delete` method of the `REDCapInterface` class, specifying the record nu
 ### HELPER FUNCTIONS
 To determine whether a specific record is present in the database, use the `exists()` method:
 
-    from REDCap_API_interface import REDCapInterface
+    from dbmi_redcap import REDCapInterface
 
 
     redcap_interface_object = REDCapInterface()
@@ -68,7 +79,7 @@ To determine whether a specific record is present in the database, use the `exis
 
 To assist in creating a new record, look up the next available record number using the `next_record_number` method:
 
-    from REDCap_API_interface import REDCapInterface
+    from dbmi_redcap import REDCapInterface
 
 
     redcap_interface_object = REDCapInterface()
@@ -76,7 +87,7 @@ To assist in creating a new record, look up the next available record number usi
 
 This `new_record_number` is guaranteed _not_ to exist. The highest record number that _does_ exist is found with the `last_record_number` method:
 
-    from REDCap_API_interface import REDCapInterface
+    from dbmi_redcap import REDCapInterface
 
 
     redcap_interface_object = REDCapInterface()
@@ -84,7 +95,7 @@ This `new_record_number` is guaranteed _not_ to exist. The highest record number
 
 To check what software version is used in the REDCapAPI, use the `version` method:
 
-    from REDCap_API_interface import REDCapInterface
+    from dbmi_redcap import REDCapInterface
 
 
     redcap_interface_object = REDCapInterface()
