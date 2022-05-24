@@ -1,0 +1,36 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: check-docstring-first
+      - id: check-merge-conflict
+      - id: trailing-whitespace
+#      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-ast
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+        name: black
+        entry: black
+        language: system
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: sh ./.github/pre-commit/run_pylint.sh
+        types: [python]
+        language: system
+      - id: coverage
+        name: coverage
+        entry: sh ./.github/pre-commit/run_coverage.sh
+        language: system
+      - id: documentation
+        name: documentation
+        entry: sh ./.github/pre-commit/run_documentation.sh
+        language: system
+      - id: last_commit_date
+        name: last_commit_date
+        entry: sh ./.github/pre-commit/run_last_commit.sh
+        language: system
