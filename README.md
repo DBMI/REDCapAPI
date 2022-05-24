@@ -18,7 +18,7 @@ You will need to generate a token for yourself in the CAPMC project in REDCap. C
 Copy the file `config-example.key` to `F:\RedCap\secrets\config.key`. Put your token into `config.key` and save the file.
 
 ## Installing the `dbmi_redcap` package
-`pip install git+https://github.com/DBMI/REDCAP_API_Calls.git`
+    `pip install git+https://github.com/DBMI/REDCAP_API_Calls.git`
 
 This will allow you to import the `REDCapInterface` class within python:
 `from dbmi_redcap import REDCapInterface`
