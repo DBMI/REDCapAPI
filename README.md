@@ -8,7 +8,7 @@
 
 You will need to generate a token for yourself in the CAPMC project in REDCap. Click _API_ in the REDCap menu:
 
-![image info](./pictures/api.png)
+![image info](./pictures/redcap.png)
 
 Copy the file `config-example.key` to `F:\RedCap\secrets\config.key`. Put your token into `config.key` and save the file.
 
