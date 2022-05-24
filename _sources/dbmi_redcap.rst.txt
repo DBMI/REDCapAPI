@@ -1,0 +1,21 @@
+dbmi\_redcap package
+====================
+
+Submodules
+----------
+
+dbmi\_redcap.redcap\_api\_interface module
+------------------------------------------
+
+.. automodule:: dbmi_redcap.redcap_api_interface
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: dbmi_redcap
+   :members:
+   :undoc-members:
+   :show-inheritance:
