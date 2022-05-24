@@ -11,7 +11,7 @@ from unittest import TestCase
 import re
 import pandas as pd
 from faker import Faker
-from redcap_api_interface import REDCapInterface
+from dbmi_redcap import REDCapInterface
 from utilities import convert_to_date
 
 
