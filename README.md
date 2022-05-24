@@ -9,11 +9,11 @@
 ## Obtaining a token
 You will need to generate a token for yourself in the CAPMC project in REDCap. Click _API_ in the REDCap menu...:
 
-![image info](./pictures/select API.png)
+![image info](./pictures/select_API.png)
 
 ...and then click _Request API token_:
 
-![image info](./pictures/request token.png)
+![image info](./pictures/request_token.png)
 
 Copy the file `config-example.key` to `F:\RedCap\secrets\config.key`. Put your token into `config.key` and save the file.
 
