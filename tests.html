@@ -36,8 +36,259 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </section>
-<section id="tests-test-redcap-class-module">
-<h2>tests.test_redcap_class module<a class="headerlink" href="#tests-test-redcap-class-module" title="Permalink to this headline">¶</a></h2>
+<section id="module-tests.test_redcap_class">
+<span id="tests-test-redcap-class-module"></span><h2>tests.test_redcap_class module<a class="headerlink" href="#module-tests.test_redcap_class" title="Permalink to this headline">¶</a></h2>
+<p>Module test_redcap_class.py, which exists to support automated
+testing of the REDCapInterface class.</p>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<p>TestREDCap</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tests.test_redcap_class.</span></span><span class="sig-name descname"><span class="pre">TestREDCap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Class used for testing the REDCapInterface class.</p>
+<p>…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.api_version_string">
+<span class="sig-name descname"><span class="pre">api_version_string</span></span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.api_version_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set to the expected REDCap API version.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.known_fake_record_number">
+<span class="sig-name descname"><span class="pre">known_fake_record_number</span></span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.known_fake_record_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>The record we inserted into the DEV database
+that–when we see it–that confirms we’re really in the DEV database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_bulk_record_retrieval">
+<span class="sig-name descname"><span class="pre">test_bulk_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_bulk_record_retrieval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests retrieving ALL the records from our REDCap database.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_create_one_record">
+<span class="sig-name descname"><span class="pre">test_create_one_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_create_one_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests creating one record from fake data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_create_multiple_records">
+<span class="sig-name descname"><span class="pre">test_create_multiple_records</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_create_multiple_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests creating several records.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_date_conversion">
+<span class="sig-name descname"><span class="pre">test_date_conversion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_date_conversion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests many formats of date/time string data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_delete_record">
+<span class="sig-name descname"><span class="pre">test_delete_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_delete_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests method to delete a record.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_exists">
+<span class="sig-name descname"><span class="pre">test_exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests method that asks database whether given record exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_last_record_number">
+<span class="sig-name descname"><span class="pre">test_last_record_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_last_record_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests method last_record_number() in both single and multiple modes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_multiple_record_retrieval">
+<span class="sig-name descname"><span class="pre">test_multiple_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_multiple_record_retrieval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the retrieve() method using a list of desired records.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_next_record_number">
+<span class="sig-name descname"><span class="pre">test_next_record_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_next_record_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests method that asks for next unused record number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_object_instantiation">
+<span class="sig-name descname"><span class="pre">test_object_instantiation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_object_instantiation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the __init__ method of the REDCapInterface class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_single_record_retrieval">
+<span class="sig-name descname"><span class="pre">test_single_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_single_record_retrieval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests retrieving a single record.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap.test_update_record">
+<span class="sig-name descname"><span class="pre">test_update_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.test_update_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests updating a given record.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">api_version_string</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'10.6.21'</span></em><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">known_fake_record_number</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6393740</span></em><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">test_bulk_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test retrieving ALL records.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">test_create_multiple_records</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test creating SEVERAL records.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">test_create_one_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test creating ONE record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">test_date_conversion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test converting strings to dates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">test_delete_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id6" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test deleting one record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">test_exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id7" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test method for querying whether given record is present.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">test_last_record_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id8" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test method for looking up highest used record number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">test_multiple_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id9" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test retrieving SEVERAL records.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">test_next_record_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id10" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test method for determining which is next unused record number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">test_object_instantiation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id11" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test creating REDCapInterface object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">test_single_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id12" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test retrieving ONE record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">test_update_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id13" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test updating given record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 <section id="module-tests">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tests" title="Permalink to this headline">¶</a></h2>

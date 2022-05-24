@@ -1,10 +1,7 @@
-REDCap_API_Calls
-================
+dbmi_redcap
+===========
 
 .. toctree::
    :maxdepth: 4
 
    dbmi_redcap
-   setup
-   tests
-   utilities
