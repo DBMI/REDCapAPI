@@ -79,14 +79,14 @@ class REDCapInterface:
         self.__setup_logging()
         self.__read_config_file()
 
-        if self.__isdev and not self.__known_test_record_present():
+        if self.__isdev and not self.__known_test_record_present(): # pragma: no cover
             self.__log.error(
                 "Unable to find known test record. You might not be connected to the DEV database."
             )
             raise RuntimeError(
                 "WARNING! Unable to find known test record."
                 + "You might not be connected to the DEV database."
-            )  # pragma: no cover
+            )
 
         # Lets all methods know that we're talking to the correct database.
         self.__valid = True
@@ -296,13 +296,13 @@ class REDCapInterface:
             or not isinstance(record, pd.DataFrame)
             or "first_name" not in record
             or "last_name" not in record
-        ):
+        ):  # pragma: no cover
             self.__log.error("Unable to retrieve known test record.")
             self.__log.error("You might not be connected to the DEV database.")
             raise RuntimeError(
                 "Unable to retrieve known test record."
                 + "You might not be connected to the DEV database."
-            )  # pragma: no cover
+            )
 
         return (
             record.iloc[0].first_name == "TESTER"
@@ -353,11 +353,11 @@ class REDCapInterface:
             ):
                 if last_valid_record_number > 0:
                     last_valid_record_number -= 1
-                else:
+                else: # pragma: no cover
                     self.__log.error("Unable to find any valid record numbers.")
                     raise RuntimeError(
                         "Unable to find any valid record numbers."
-                    )  # pragma: no cover
+                    )
 
             except_for.append(last_valid_record_number)
             valid_record_numbers_found.append(last_valid_record_number)
@@ -392,11 +392,11 @@ class REDCapInterface:
 
         response = requests.post(self.__api_uri, data=fields)
 
-        if response is None or response.status_code != 200:
+        if response is None or response.status_code != 200:  # pragma: no cover
             self.__log.error("Unable to query for next record number.")
             raise RuntimeError(
                 "Unable to query for next record number."
-            )  # pragma: no cover
+            )
 
         try:
             return int(response.text)
@@ -572,13 +572,13 @@ class REDCapInterface:
         if not self.__valid:  # pragma: no cover
             return None
 
-        if not isinstance(new_data_record, dict):
+        if not isinstance(new_data_record, dict):  # pragma: no cover
             self.__log.error("Input is not a dict.")
-            raise TypeError("Input is not a dict.")  # pragma: no cover
+            raise TypeError("Input is not a dict.")
 
-        if not isinstance(existing_record, pd.DataFrame):
+        if not isinstance(existing_record, pd.DataFrame):  # pragma: no cover
             self.__log.error("Input is not a dataframe.")
-            raise TypeError("Input is not a dataframe.")  # pragma: no cover
+            raise TypeError("Input is not a dataframe.")
 
         # Delete existing record so that we'll be allowed to
         #  insert a record with the same record number.
@@ -618,7 +618,7 @@ class REDCapInterface:
             # We deleted the original record,
             # are unable to insert the modified record,
             # AND can't restore the deleted record.
-            self.__log.error("Unable to restore deleted record.")
+            self.__log.error("Unable to restore deleted record.")  # pragma: no cover
             raise RuntimeError("Unable to restore deleted record.")  # pragma: no cover
 
         return True
