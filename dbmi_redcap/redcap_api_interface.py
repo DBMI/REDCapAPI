@@ -130,18 +130,19 @@ class REDCapInterface:
         #  ->unless<- we're in DEV mode AND "expanded_record" selected.
         if not self.__isdev or not expanded_record:
             pull_dict["fields[0]"] = ("study_id",)
-            pull_dict["fields[1]"] = ("first_name",)
-            pull_dict["fields[2]"] = ("last_name",)
-            pull_dict["fields[3]"] = ("street_address_line_1",)
-            pull_dict["fields[4]"] = ("city",)
-            pull_dict["fields[5]"] = ("state",)
-            pull_dict["fields[6]"] = ("zip_code",)
-            pull_dict["fields[7]"] = ("email_address",)
-            pull_dict["fields[8]"] = ("phone_number",)
-            pull_dict["fields[9]"] = ("dob",)
-            pull_dict["fields[10]"] = ("primary_consent_date",)
-            pull_dict["fields[11]"] = ("core_participant_date",)
-            pull_dict["fields[12]"] = ("date_of_last_activity",)
+            pull_dict["fields[1]"] = ("mrn",)
+            pull_dict["fields[2]"] = ("first_name",)
+            pull_dict["fields[3]"] = ("last_name",)
+            pull_dict["fields[4]"] = ("street_address_line_1",)
+            pull_dict["fields[5]"] = ("city",)
+            pull_dict["fields[6]"] = ("state",)
+            pull_dict["fields[7]"] = ("zip_code",)
+            pull_dict["fields[8]"] = ("email_address",)
+            pull_dict["fields[9]"] = ("phone_number",)
+            pull_dict["fields[10]"] = ("dob",)
+            pull_dict["fields[11]"] = ("primary_consent_date",)
+            pull_dict["fields[12]"] = ("core_participant_date",)
+            pull_dict["fields[13]"] = ("date_of_last_activity",)
 
         if record_numbers is not None:
             # Insert into the dictionary a key for each desired record number.
