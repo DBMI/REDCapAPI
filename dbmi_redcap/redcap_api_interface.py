@@ -66,7 +66,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> production_redcap_interface_object = REDCapInterface()
@@ -79,7 +79,7 @@ class REDCapInterface:
         self.__setup_logging()
         self.__read_config_file()
 
-        if self.__isdev and not self.__known_test_record_present(): # pragma: no cover
+        if self.__isdev and not self.__known_test_record_present():  # pragma: no cover
             self.__log.error(
                 "Unable to find known test record. You might not be connected to the DEV database."
             )
@@ -130,10 +130,18 @@ class REDCapInterface:
         #  ->unless<- we're in DEV mode AND "expanded_record" selected.
         if not self.__isdev or not expanded_record:
             pull_dict["fields[0]"] = ("study_id",)
-            pull_dict["fields[1]"] = ("dob",)
-            pull_dict["fields[2]"] = ("primary_consent_date",)
-            pull_dict["fields[3]"] = ("core_participant_date",)
-            pull_dict["fields[4]"] = ("date_of_last_activity",)
+            pull_dict["fields[1]"] = ("first_name",)
+            pull_dict["fields[2]"] = ("last_name",)
+            pull_dict["fields[3]"] = ("street_address_line_1",)
+            pull_dict["fields[4]"] = ("city",)
+            pull_dict["fields[5]"] = ("state",)
+            pull_dict["fields[6]"] = ("zip_code",)
+            pull_dict["fields[7]"] = ("email_address",)
+            pull_dict["fields[8]"] = ("phone_number",)
+            pull_dict["fields[9]"] = ("dob",)
+            pull_dict["fields[10]"] = ("primary_consent_date",)
+            pull_dict["fields[11]"] = ("core_participant_date",)
+            pull_dict["fields[12]"] = ("date_of_last_activity",)
 
         if record_numbers is not None:
             # Insert into the dictionary a key for each desired record number.
@@ -161,7 +169,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -209,7 +217,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -247,7 +255,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -289,7 +297,7 @@ class REDCapInterface:
         bool
         """
         test_record_number = 6393740  # pragma: no cover
-        record = self.retrieve(test_record_number, expanded_record=True)
+        record = self.retrieve(test_record_number)
 
         if (
             record is None
@@ -328,7 +336,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -353,11 +361,9 @@ class REDCapInterface:
             ):
                 if last_valid_record_number > 0:
                     last_valid_record_number -= 1
-                else: # pragma: no cover
+                else:  # pragma: no cover
                     self.__log.error("Unable to find any valid record numbers.")
-                    raise RuntimeError(
-                        "Unable to find any valid record numbers."
-                    )
+                    raise RuntimeError("Unable to find any valid record numbers.")
 
             except_for.append(last_valid_record_number)
             valid_record_numbers_found.append(last_valid_record_number)
@@ -379,7 +385,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -394,9 +400,7 @@ class REDCapInterface:
 
         if response is None or response.status_code != 200:  # pragma: no cover
             self.__log.error("Unable to query for next record number.")
-            raise RuntimeError(
-                "Unable to query for next record number."
-            )
+            raise RuntimeError("Unable to query for next record number.")
 
         try:
             return int(response.text)
@@ -437,7 +441,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -511,7 +515,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -561,7 +565,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -633,7 +637,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from redcap_api_interface import REDCapInterface
+        >>> from dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()

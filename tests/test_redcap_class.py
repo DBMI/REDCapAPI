@@ -83,6 +83,9 @@ class TestREDCap(TestCase):
             f"Expected many elements in dataframe but received {num_elements_returned}."
         )
         self.assertGreater(num_elements_returned, 2, message)
+        self.assertTrue("dob" in retrieved_df.columns)
+
+        # Bulk mode won't work in expanded mode--insufficient memory.
 
     def test_create_one_record(self):
         """
@@ -282,6 +285,22 @@ class TestREDCap(TestCase):
             2,
             f"Expected 2 elements in dataframe but received {num_elements_returned}.",
         )
+        self.assertTrue("dob" in retrieved_df.columns)
+
+        # Expanded mode.
+        retrieved_df = redcap_interface_object.retrieve(
+            record_numbers=two_valid_numbers, expanded_record=True
+        )
+        self.assertIsInstance(
+            retrieved_df, pd.DataFrame, "Unable to retrieve data frame from REDCap."
+        )
+        num_elements_returned: int = retrieved_df.shape[0]
+        self.assertEqual(
+            num_elements_returned,
+            2,
+            f"Expected 2 elements in dataframe but received {num_elements_returned}.",
+        )
+        self.assertTrue("meeting_notes" in retrieved_df.columns)
 
     def test_next_record_number(self):
         """
@@ -345,10 +364,28 @@ class TestREDCap(TestCase):
             1,
             f"Expected 1 element in dataframe but received {num_elements_returned}.",
         )
+        self.assertTrue("dob" in retrieved_df.columns)
+
         self.assertTrue(redcap_interface_object.retrieve("should not work") is None)
 
         with self.assertRaises(RuntimeError):
             redcap_interface_object.retrieve(-1)
+
+        # Test expanded mode.
+        retrieved_df = redcap_interface_object.retrieve(
+            record_numbers=last_record_number, expanded_record=True
+        )
+
+        self.assertIsInstance(
+            retrieved_df, pd.DataFrame, "Unable to retrieve data frame from REDCap."
+        )
+        num_elements_returned: int = retrieved_df.shape[0]
+        self.assertEqual(
+            num_elements_returned,
+            1,
+            f"Expected 1 element in dataframe but received {num_elements_returned}.",
+        )
+        self.assertTrue("meeting_notes" in retrieved_df.columns)
 
     def test_update_record(self):
         """
