@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='dbmi-redcap',
-    version='1.0.0',
+    version='1.0.1',
     packages=['dbmi_redcap'],
     url='https://github.com/DBMI/REDCap_API_Calls',
     license='',
