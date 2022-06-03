@@ -148,6 +148,7 @@ class REDCapInterface:
             pull_dict["fields[16]"] = ("core_participant_date",)
             pull_dict["fields[17]"] = ("date_of_last_activity",)
             pull_dict["fields[18]"] = ("date_added",)
+            pull_dict["fields[19]"] = ("duplicate_record",)
 
         if record_numbers is not None:
             # Insert into the dictionary a key for each desired record number.
