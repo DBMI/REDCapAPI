@@ -4,6 +4,7 @@ Module: contains class REDCapInterface, providing a wrapper around the REDCap AP
 import configparser
 import json
 import logging
+import math
 from typing import Union
 import sys
 import pandas as pd
@@ -148,7 +149,7 @@ class REDCapInterface:
             pull_dict["fields[16]"] = ("core_participant_date",)
             pull_dict["fields[17]"] = ("date_of_last_activity",)
             pull_dict["fields[18]"] = ("date_added",)
-            pull_dict["fields[19]"] = ("duplicate_record",)
+            pull_dict["fields[19]"] = ("duplicate_record___yes",)
 
         if record_numbers is not None:
             # Insert into the dictionary a key for each desired record number.
@@ -196,6 +197,10 @@ class REDCapInterface:
         else:
             return False
 
+        # Remove fields containing no info.
+        data_records = list(map(self.__discard_empty_fields, data_records))
+
+        # JSONify
         data = json.dumps(data_records)
 
         fields = {
@@ -245,6 +250,34 @@ class REDCapInterface:
 
         response = requests.post(self.__api_uri, data=fields)
         return response is not None and response.status_code == 200
+
+    def __discard_empty_fields(self, input: dict) -> dict:
+        """Trim dict keys with empty or nan values.
+
+        Parameters
+        ----------
+        input : dict
+
+        Return
+        ------
+        input_trimmed : dict
+        """
+        if input is None or not isinstance(input, dict):
+            self.__log.error("Input 'input' is not an int.")
+            raise TypeError("Input 'input' is not an int.")
+
+        input_trimmed = {}
+
+        for key, value in input.items():
+            if value is not None:
+                if isinstance(value, str) and value != "NaN":
+                    input_trimmed[key] = value
+                    continue
+
+                if isinstance(value, (int, float)) and not math.isnan(value):
+                    input_trimmed[key] = value
+
+        return input_trimmed
 
     def exists(self, record_number: int = None) -> bool:
         """
