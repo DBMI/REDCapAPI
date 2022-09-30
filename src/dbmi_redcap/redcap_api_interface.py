@@ -67,7 +67,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> production_redcap_interface_object = REDCapInterface()
@@ -177,7 +177,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -229,7 +229,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -295,7 +295,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -376,7 +376,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -425,7 +425,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -481,7 +481,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -555,7 +555,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -605,7 +605,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -677,7 +677,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from dbmi_redcap import REDCapInterface
+        >>> from src.dbmi_redcap import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()

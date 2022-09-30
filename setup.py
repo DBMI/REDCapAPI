@@ -3,6 +3,7 @@ from setuptools import setup
 setup(
     name='dbmi-redcap',
     version='1.0.5',
+    package_dir={'': 'src'},
     packages=['dbmi_redcap'],
     url='https://github.com/DBMI/REDCap_API_Calls',
     license='',
