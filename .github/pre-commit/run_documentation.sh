@@ -1,4 +1,4 @@
-cd C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCap_API_Calls
+cd C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCapAPI
 sphinx-apidoc -f -o .\\docs\\source .\\dbmi_redcap
 sphinx-build -b html .\\docs\\source .\\docs\\build\\html
 cd .\\docs\\build\\html
