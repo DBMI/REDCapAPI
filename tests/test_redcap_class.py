@@ -11,7 +11,7 @@ from unittest import TestCase
 import re
 import pandas as pd
 from faker import Faker
-from src.dbmi_redcap import REDCapInterface
+from src.redcap_api import REDCapInterface
 from utilities import convert_to_date
 
 
@@ -101,8 +101,8 @@ class TestREDCap(TestCase):
         next_study_id = redcap_interface_object.next_record_number()
         record = self.__create_fake_record(next_study_id)
         self.assertTrue(redcap_interface_object.create(record))
-        df = pd.DataFrame([record], index=[next_study_id])
-        self.assertTrue(redcap_interface_object.create(df))
+        test_df = pd.DataFrame([record], index=[next_study_id])
+        self.assertTrue(redcap_interface_object.create(test_df))
 
     def test_create_multiple_records(self):
         """
