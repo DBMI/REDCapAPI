@@ -1,4 +1,3 @@
-cd C:\\Users\\Kevin.Delaney\\PycharmProjects\\REDCapAPI
 python setup.py check
 python setup.py sdist
 python setup.py bdist_wheel --universal
