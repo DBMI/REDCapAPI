@@ -1,4 +1,4 @@
-sphinx-apidoc -f -o .\\docs\\source .\\redcap_api
+sphinx-apidoc -f -o .\\docs\\source .\\src\\redcap_api
 sphinx-build -b html .\\docs\\source .\\docs\\build\\html
 cd .\\docs\\build\\html
 git add --all
