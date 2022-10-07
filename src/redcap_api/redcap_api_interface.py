@@ -48,7 +48,7 @@ class REDCapInterface:
         Returns the version number of the REDCap API in use.
     """
 
-    def __init__(self, isdev: bool = False):
+    def __init__(self, isdev: bool = False, timeout_sec: int = 10):
         """
         Create instance of `REDCapInterface` class.
 
@@ -60,6 +60,9 @@ class REDCapInterface:
         ----------
         isdev : bool, optional
             Set to True when using development database (default is False)
+
+        timeout_sec : int, optional
+            How long to wait (in seconds) for reponse (default: 10 sec)
 
         Return
         -------
@@ -77,7 +80,7 @@ class REDCapInterface:
         self.__capmc_token = None
         self.__isdev = isdev
         self.__log = logging.getLogger(__name__)
-        self.__timeout_sec = 10
+        self.__timeout_sec = timeout_sec
         self.__setup_logging()
         self.__read_config_file()
 

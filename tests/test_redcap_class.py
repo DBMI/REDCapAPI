@@ -62,7 +62,7 @@ class TestREDCap(TestCase):
     # Accordingly, when deleting or updating records in test, we do NOT want
     # to touch that special record. So we'll provide its record number to
     # the last_record_number() method to specify that number is to be avoided.
-    api_version_string = "10.6.21"
+    api_version_string = "12.4.6"
     known_fake_record_number = 6393740
 
     def test_bulk_record_retrieval(self):
@@ -73,7 +73,7 @@ class TestREDCap(TestCase):
         ------
         bool
         """
-        redcap_interface_object = REDCapInterface(isdev=True)
+        redcap_interface_object = REDCapInterface(isdev=True, timeout_sec=120)
         retrieved_df = redcap_interface_object.retrieve()
         self.assertIsInstance(
             retrieved_df, pd.DataFrame, "Unable to retrieve data frame from REDCap."
@@ -474,7 +474,7 @@ class TestREDCap(TestCase):
         """
         Synthesize data for testing.
 
-        Paramters
+        Parameters
         ---------
         next_study_id :   int
 

@@ -18,7 +18,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.append(
-    os.path.abspath("../../")
+    os.path.abspath("../../src/")
 )  # This is so sphinx knows where to find your module
 html_logo = "../../pictures/REDCap.png"  # adds logo to documents pages.
 
@@ -30,7 +30,7 @@ copyright = "2022, University of California San Diego"
 author = "DBMI Team"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.4"
+release = "1.2.0"
 
 
 # -- General configuration ---------------------------------------------------
