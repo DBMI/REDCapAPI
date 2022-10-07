@@ -7,7 +7,7 @@ Submodules
 dbmi\_redcap.redcap\_api\_interface module
 ------------------------------------------
 
-.. automodule:: dbmi_redcap.redcap_api_interface
+.. automodule:: redcap_api.redcap_api_interface
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ dbmi\_redcap.redcap\_api\_interface module
 Module contents
 ---------------
 
-.. automodule:: dbmi_redcap
+.. automodule:: redcap_api
    :members:
    :undoc-members:
    :show-inheritance:
