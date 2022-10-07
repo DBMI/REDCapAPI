@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>tests package &#8212; REDCap API Interface 1.0.4 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,7 +12,9 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -32,21 +34,22 @@
           <div class="body" role="main">
             
   <section id="tests-package">
-<h1>tests package<a class="headerlink" href="#tests-package" title="Permalink to this headline">¶</a></h1>
+<h1>tests package<a class="headerlink" href="#tests-package" title="Permalink to this heading">¶</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-tests.test_redcap_class">
-<span id="tests-test-redcap-class-module"></span><h2>tests.test_redcap_class module<a class="headerlink" href="#module-tests.test_redcap_class" title="Permalink to this headline">¶</a></h2>
+<span id="tests-test-redcap-class-module"></span><h2>tests.test_redcap_class module<a class="headerlink" href="#module-tests.test_redcap_class" title="Permalink to this heading">¶</a></h2>
 <p>Module test_redcap_class.py, which exists to support automated
 testing of the REDCapInterface class.</p>
 <section id="classes">
-<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading">¶</a></h3>
 <p>TestREDCap</p>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="tests.test_redcap_class.TestREDCap">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tests.test_redcap_class.</span></span><span class="sig-name descname"><span class="pre">TestREDCap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
 <p>Class used for testing the REDCapInterface class.</p>
 <p>…</p>
 <dl class="py attribute">
@@ -54,7 +57,7 @@ testing of the REDCapInterface class.</p>
 <span class="sig-name descname"><span class="pre">api_version_string</span></span><a class="headerlink" href="#tests.test_redcap_class.TestREDCap.api_version_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set to the expected REDCap API version.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
@@ -66,7 +69,7 @@ testing of the REDCapInterface class.</p>
 <dd><p>The record we inserted into the DEV database
 that–when we see it–that confirms we’re really in the DEV database.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>int</p>
 </dd>
 </dl>
@@ -146,7 +149,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">api_version_string</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'10.6.21'</span></em><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">api_version_string</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'12.4.6'</span></em><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -159,7 +162,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_bulk_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test retrieving ALL records.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -170,7 +173,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_create_multiple_records</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test creating SEVERAL records.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -181,7 +184,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_create_one_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id4" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test creating ONE record.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -192,7 +195,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_date_conversion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test converting strings to dates.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -203,7 +206,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_delete_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id6" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test deleting one record.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -214,7 +217,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id7" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test method for querying whether given record is present.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -225,7 +228,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_last_record_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id8" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test method for looking up highest used record number.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -236,7 +239,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_multiple_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id9" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test retrieving SEVERAL records.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -247,7 +250,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_next_record_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id10" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test method for determining which is next unused record number.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -258,7 +261,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_object_instantiation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id11" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test creating REDCapInterface object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -269,7 +272,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_single_record_retrieval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id12" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test retrieving ONE record.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -280,7 +283,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 <span class="sig-name descname"><span class="pre">test_update_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id13" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test updating given record.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -289,9 +292,8 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
 </dd></dl>
 
 </section>
-</section>
 <section id="module-tests">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tests" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tests" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
@@ -332,7 +334,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -349,7 +351,7 @@ that–when we see it–that confirms we’re really in the DEV database.</p>
       &copy;2022, University of California San Diego.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.2.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

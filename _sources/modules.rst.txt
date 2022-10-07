@@ -1,7 +1,7 @@
-dbmi_redcap
-===========
+redcap_api
+==========
 
 .. toctree::
    :maxdepth: 4
 
-   dbmi_redcap
+   redcap_api
