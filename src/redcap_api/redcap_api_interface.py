@@ -48,7 +48,7 @@ class REDCapInterface:
         Returns the version number of the REDCap API in use.
     """
 
-    def __init__(self, isdev: bool = False):
+    def __init__(self, isdev: bool = False, timeout_sec: int = 10):
         """
         Create instance of `REDCapInterface` class.
 
@@ -61,13 +61,16 @@ class REDCapInterface:
         isdev : bool, optional
             Set to True when using development database (default is False)
 
+        timeout_sec : int, optional
+            How long to wait (in seconds) for reponse (default: 10 sec)
+
         Return
         -------
         none; Instantiates object
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> production_redcap_interface_object = REDCapInterface()
@@ -77,6 +80,7 @@ class REDCapInterface:
         self.__capmc_token = None
         self.__isdev = isdev
         self.__log = logging.getLogger(__name__)
+        self.__timeout_sec = timeout_sec
         self.__setup_logging()
         self.__read_config_file()
 
@@ -177,7 +181,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -211,7 +215,9 @@ class REDCapInterface:
             "data": data,
         }
 
-        response = requests.post(self.__api_uri, data=fields)
+        response = requests.post(
+            self.__api_uri, data=fields, timeout=self.__timeout_sec
+        )
         return response is not None and response.status_code == 200
 
     def delete(self, record_number: int) -> bool:
@@ -229,7 +235,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -248,27 +254,29 @@ class REDCapInterface:
             "records[0]": record_number,
         }
 
-        response = requests.post(self.__api_uri, data=fields)
+        response = requests.post(
+            self.__api_uri, data=fields, timeout=self.__timeout_sec
+        )
         return response is not None and response.status_code == 200
 
-    def __discard_empty_fields(self, input: dict) -> dict:
+    def __discard_empty_fields(self, input_dict: dict) -> dict:
         """Trim dict keys with empty or nan values.
 
         Parameters
         ----------
-        input : dict
+        input_dict : dict
 
         Return
         ------
         input_trimmed : dict
         """
-        if input is None or not isinstance(input, dict):
-            self.__log.error("Input 'input' is not an int.")
-            raise TypeError("Input 'input' is not an int.")
+        if input_dict is None or not isinstance(input_dict, dict):
+            self.__log.error("Input 'input_dict' is not an int.")
+            raise TypeError("Input 'input_dict' is not an int.")
 
         input_trimmed = {}
 
-        for key, value in input.items():
+        for key, value in input_dict.items():
             if value is not None:
                 if isinstance(value, str) and value != "NaN":
                     input_trimmed[key] = value
@@ -295,7 +303,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -314,7 +322,9 @@ class REDCapInterface:
                 self.__log.error("Input 'record_number' is not an int.")
                 raise TypeError("Input 'record_number' is not an int.")
 
-            response = requests.post(self.__api_uri, data=data_pull, verify=True)
+            response = requests.post(
+                self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
+            )
 
             try:
                 return response.status_code == 200 and "study_id" in response.text
@@ -376,7 +386,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -425,7 +435,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -436,7 +446,9 @@ class REDCapInterface:
             "content": "generateNextRecordName",
         }
 
-        response = requests.post(self.__api_uri, data=fields)
+        response = requests.post(
+            self.__api_uri, data=fields, timeout=self.__timeout_sec
+        )
 
         if response is None or response.status_code != 200:  # pragma: no cover
             self.__log.error("Unable to query for next record number.")
@@ -481,7 +493,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -498,7 +510,9 @@ class REDCapInterface:
         data_pull = self.__build_data_pull(
             record_numbers, expanded_record=expanded_record
         )
-        response = requests.post(self.__api_uri, data=data_pull, verify=True)
+        response = requests.post(
+            self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
+        )
 
         try:
             if (
@@ -555,7 +569,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -605,7 +619,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -677,7 +691,7 @@ class REDCapInterface:
 
         Examples
         --------
-        >>> from src.dbmi_redcap import REDCapInterface
+        >>> from src.redcap_api import REDCapInterface
         >>>
         >>>
         >>> redcap_interface_object = REDCapInterface()
@@ -685,7 +699,9 @@ class REDCapInterface:
         """
         fields = {"token": self.__capmc_token, "content": "version"}
 
-        response = requests.post(self.__api_uri, data=fields, verify=True)
+        response = requests.post(
+            self.__api_uri, data=fields, verify=True, timeout=self.__timeout_sec
+        )
 
         if not response or response.status_code != 200:  # pragma: no cover
             self.__log.error("Unable to query REDCap API for version.")
