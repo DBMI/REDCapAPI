@@ -433,6 +433,22 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "faker"
+version = "16.4.0"
+description = "Faker is a Python package that generates fake data for you."
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "Faker-16.4.0-py3-none-any.whl", hash = "sha256:5420467fad3fa582094057754e5e81326cb1f51ab822bf9df96c077cfb35ae49"},
+    {file = "Faker-16.4.0.tar.gz", hash = "sha256:dcffdca8ec9a715982bcd5f53ee688dc4784cd112f9910f8f7183773eb3ec276"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.4"
+typing-extensions = {version = ">=3.10.0.1", markers = "python_version < \"3.8\""}
+
+[[package]]
 name = "filelock"
 version = "3.9.0"
 description = "A platform independent file lock."
@@ -2173,4 +2189,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "eccba5c84ddcea65a916bb602e259b9545fcf11d83e115aefcc917ab00d47fdd"
+content-hash = "5376ee3995d39adc385e551ed2181ae940edf0fdb495166efb13eaff8499ff93"
