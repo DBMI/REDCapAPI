@@ -7,10 +7,12 @@ Classes
 TestREDCap
 """
 from datetime import datetime
+
 import pandas
 import pytest
-from src.redcap_api import REDCapInterface
 from utilities import convert_to_date
+
+from redcap_api import REDCapInterface
 
 
 def test_bulk_record_retrieval():
