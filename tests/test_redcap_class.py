@@ -7,7 +7,7 @@ Classes
 TestREDCap
 """
 from datetime import datetime
-import pandas as pd
+import pandas
 import pytest
 from src.redcap_api import REDCapInterface
 from utilities import convert_to_date
@@ -23,7 +23,7 @@ def test_bulk_record_retrieval():
     """
     redcap_interface_object = REDCapInterface(isdev=True, timeout_sec=120)
     retrieved_df = redcap_interface_object.retrieve()
-    assert isinstance(retrieved_df, pd.DataFrame)
+    assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned > 2
     assert "dob" in retrieved_df.columns
@@ -40,12 +40,12 @@ def test_create_one_record(fake_record):
     bool
     """
     redcap_interface_object = REDCapInterface(isdev=True)
-    assert redcap_interface_object.create(None) is None
+    assert not redcap_interface_object.create(None)
     assert not redcap_interface_object.create("should not work")
     next_study_id = redcap_interface_object.next_record_number()
     fake_record["study_id"] = next_study_id
     assert redcap_interface_object.create(fake_record)
-    test_df = pd.DataFrame([fake_record], index=[next_study_id])
+    test_df = pandas.DataFrame([fake_record], index=[next_study_id])
     assert redcap_interface_object.create(test_df)
 
 
@@ -157,7 +157,7 @@ def test_delete_record(known_fake_record_number):
     assert redcap_interface_object.delete(last_record_number)
 
     # Ensure calling "delete" with no record number returns None.
-    assert redcap_interface_object.delete(None) is None
+    assert not redcap_interface_object.delete(None)
 
 
 def test_exists():
@@ -172,11 +172,13 @@ def test_exists():
     last_record_number = redcap_interface_object.last_record_number()
     assert redcap_interface_object.exists(last_record_number)
 
-    # Cases that should result in False.
-    assert not redcap_interface_object.exists(None)
+    # Case that should result in False.
     assert not redcap_interface_object.exists(-1)
 
-    # Case that should throw exception.
+    # Cases that should throw exception.
+    with pytest.raises(TypeError):
+        assert not redcap_interface_object.exists(None)
+
     with pytest.raises(TypeError):
         redcap_interface_object.exists("should throw error")
 
@@ -220,7 +222,7 @@ def test_multiple_record_retrieval():
     redcap_interface_object = REDCapInterface(isdev=True)
     two_valid_numbers = redcap_interface_object.last_record_number(number_desired=2)
     retrieved_df = redcap_interface_object.retrieve(two_valid_numbers)
-    assert isinstance(retrieved_df, pd.DataFrame)
+    assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned == 2
     assert "dob" in retrieved_df.columns
@@ -229,7 +231,7 @@ def test_multiple_record_retrieval():
     retrieved_df = redcap_interface_object.retrieve(
         record_numbers=two_valid_numbers, expanded_record=True
     )
-    assert isinstance(retrieved_df, pd.DataFrame)
+    assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned == 2
     assert "meeting_notes" in retrieved_df.columns
@@ -282,12 +284,14 @@ def test_single_record_retrieval():
     redcap_interface_object = REDCapInterface(isdev=True)
     last_record_number = redcap_interface_object.last_record_number()
     retrieved_df = redcap_interface_object.retrieve(last_record_number)
-    assert isinstance(retrieved_df, pd.DataFrame)
+    assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned == 1
     assert "dob" in retrieved_df.columns
 
-    assert redcap_interface_object.retrieve("should not work") is None
+    retrieved_df = redcap_interface_object.retrieve("should not work")
+    assert isinstance(retrieved_df, pandas.DataFrame)
+    assert len(retrieved_df) == 0
 
     with pytest.raises(RuntimeError):
         redcap_interface_object.retrieve(-1)
@@ -297,7 +301,7 @@ def test_single_record_retrieval():
         record_numbers=last_record_number, expanded_record=True
     )
 
-    assert isinstance(retrieved_df, pd.DataFrame)
+    assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned == 1
     assert "meeting_notes" in retrieved_df.columns
@@ -331,7 +335,7 @@ def test_update_record(known_fake_record_number):
     # Check that the date_of_last_activity field was really updated.
     updated_record = redcap_interface_object.retrieve(last_record_number)
     assert updated_record is not None
-    assert isinstance(updated_record, pd.DataFrame)
+    assert isinstance(updated_record, pandas.DataFrame)
     assert "date_of_last_activity" in updated_record
     retrieved_datestring = updated_record["date_of_last_activity"][0]
     assert right_now_string == retrieved_datestring
@@ -342,13 +346,13 @@ def test_update_record(known_fake_record_number):
         "study_id": str(last_record_number),
         "date_of_last_activity": right_now_string,
     }
-    new_info_df = pd.DataFrame(data=new_info, index=[0])
+    new_info_df = pandas.DataFrame(data=new_info, index=[0])
     assert redcap_interface_object.update(new_info_df)
 
     # Check that the date_of_last_activity field was really updated.
     updated_record = redcap_interface_object.retrieve(last_record_number)
     assert updated_record is not None
-    assert isinstance(updated_record, pd.DataFrame)
+    assert isinstance(updated_record, pandas.DataFrame)
     assert "date_of_last_activity" in updated_record
     retrieved_datestring = updated_record["date_of_last_activity"][0]
     assert right_now_string == retrieved_datestring
@@ -359,7 +363,7 @@ def test_update_record(known_fake_record_number):
 
     # What if the attempted update can't be inserted? Ensure
     new_info["this_column_does_not_exist"] = "this won't work"
-    new_info_df = pd.DataFrame(data=new_info, index=[0])
+    new_info_df = pandas.DataFrame(data=new_info, index=[0])
 
     with pytest.raises(RuntimeError) as error_raised:
         redcap_interface_object.update(new_info_df)

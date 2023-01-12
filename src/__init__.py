@@ -1,1 +1,1 @@
-import redcap_api
+import redcap_api  # type: ignore[import]
