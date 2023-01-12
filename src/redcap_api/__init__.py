@@ -10,3 +10,5 @@ __credits__ = (
     "University of California San Diego"
     + "School of Medicine; Department of Biomedical Informatics"
 )
+
+from redcap_api_interface import REDCapInterface  # type: ignore[import]  # noqa: F401
