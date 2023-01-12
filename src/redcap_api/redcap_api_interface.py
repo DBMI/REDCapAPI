@@ -5,9 +5,10 @@ import configparser
 import json
 import logging
 import math
-from typing import Union
 import sys
-import pandas as pd
+from typing import List, Union
+
+import pandas  # type: ignore[import]
 import requests
 
 
@@ -76,8 +77,8 @@ class REDCapInterface:
         >>> production_redcap_interface_object = REDCapInterface()
         >>> development_redcap_interface_object = REDCapInterface(isdev=True)
         """
-        self.__api_uri = None
-        self.__capmc_token = None
+        self.__api_uri = ""
+        self.__capmc_token = ""
         self.__isdev = isdev
         self.__log = logging.getLogger(__name__)
         self.__timeout_sec = timeout_sec
@@ -86,27 +87,84 @@ class REDCapInterface:
 
         if self.__isdev and not self.__known_test_record_present():  # pragma: no cover
             self.__log.error(
-                "Unable to find known test record. You might not be connected to the DEV database."
+                "Unable to find known test record. "
+                "You might not be connected to the DEV database."
             )
             raise RuntimeError(
-                "WARNING! Unable to find known test record."
-                + "You might not be connected to the DEV database."
+                "WARNING! Unable to find known test record. "
+                "You might not be connected to the DEV database."
             )
 
         # Lets all methods know that we're talking to the correct database.
         self.__valid = True
 
+    def create(self, data_records: Union[dict, pandas.DataFrame]) -> bool:
+        """
+        Insert new records into database.
+
+        Parameters
+        ----------
+        data_records : dict, dataframe
+            Must contain the new study_id desired.
+
+        Return
+        ------
+        bool
+
+        Examples
+        --------
+        >>> from src.redcap_api import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> new_data = {
+        >>> 'study_id': '12345',
+        >>> 'name': "Patient's Name",
+        >>> 'mrn': '000000', ...}
+        >>> redcap_interface_object.create(new_data)
+        """
+        if not self.__valid:  # pragma: no cover
+            return False
+
+        if data_records is None:
+            return False
+
+        if isinstance(data_records, dict):
+            data_records_list = [data_records]
+        elif isinstance(data_records, pandas.DataFrame):
+            data_records_list = data_records.to_dict("records")
+        else:
+            return False
+
+        # Remove fields containing no info.
+        data_records_list = list(map(self.__discard_empty_fields, data_records_list))
+
+        # JSONify
+        data = json.dumps(data_records_list)
+
+        fields = {
+            "token": self.__capmc_token,
+            "content": "record",
+            "format": "json",
+            "type": "flat",
+            "data": data,
+        }
+
+        response = requests.post(
+            self.__api_uri, data=fields, timeout=self.__timeout_sec
+        )
+        return response is not None and response.status_code == 200
+
     def __build_data_pull(
-        self, record_numbers: Union[int, list] = None, expanded_record: bool = False
+        self, record_numbers: Union[list, None], expanded_record: bool = False
     ) -> dict:
         """
         Assemble dict used when retrieving data records.
 
         Parameters
         ----------
-        record_numbers : int, list
+        record_numbers : list Optional
             default is None (to retrieve ALL records)
-            or user can provide a single record number or a list of numbers
         expanded_record : bool
             If true, returns all fields. Otherwise, just returns study_id, dob,
             primary_consent_date, core_participant_date, date_of_last_activity
@@ -134,28 +192,32 @@ class REDCapInterface:
         # For now, restrict the fields to just this list
         #  ->unless<- we're in DEV mode AND "expanded_record" selected.
         if not self.__isdev or not expanded_record:
-            pull_dict["fields[0]"] = ("study_id",)
-            pull_dict["fields[1]"] = ("mrn",)
-            pull_dict["fields[2]"] = ("first_name",)
-            pull_dict["fields[3]"] = ("last_name",)
-            pull_dict["fields[4]"] = ("street_address_line_1",)
-            pull_dict["fields[5]"] = ("street_address_line_2",)
-            pull_dict["fields[6]"] = ("city",)
-            pull_dict["fields[7]"] = ("state",)
-            pull_dict["fields[8]"] = ("zip_code",)
-            pull_dict["fields[9]"] = ("email_address",)
-            pull_dict["fields[10]"] = ("phone_number",)
-            pull_dict["fields[11]"] = ("dob",)
-            pull_dict["fields[12]"] = ("ethnicity",)
-            pull_dict["fields[13]"] = ("race",)
-            pull_dict["fields[14]"] = ("sex",)
-            pull_dict["fields[15]"] = ("primary_consent_date",)
-            pull_dict["fields[16]"] = ("core_participant_date",)
-            pull_dict["fields[17]"] = ("date_of_last_activity",)
-            pull_dict["fields[18]"] = ("date_added",)
-            pull_dict["fields[19]"] = ("duplicate_record___yes",)
+            pull_dict["fields[0]"] = "study_id"
+            pull_dict["fields[1]"] = "mrn"
+            pull_dict["fields[2]"] = "first_name"
+            pull_dict["fields[3]"] = "last_name"
+            pull_dict["fields[4]"] = "street_address_line_1"
+            pull_dict["fields[5]"] = "street_address_line_2"
+            pull_dict["fields[6]"] = "city"
+            pull_dict["fields[7]"] = "state"
+            pull_dict["fields[8]"] = "zip_code"
+            pull_dict["fields[9]"] = "email_address"
+            pull_dict["fields[10]"] = "phone_number"
+            pull_dict["fields[11]"] = "dob"
+            pull_dict["fields[12]"] = "ethnicity"
+            pull_dict["fields[13]"] = "race"
+            pull_dict["fields[14]"] = "sex"
+            pull_dict["fields[15]"] = "primary_consent_date"
+            pull_dict["fields[16]"] = "core_participant_date"
+            pull_dict["fields[17]"] = "date_of_last_activity"
+            pull_dict["fields[18]"] = "date_added"
+            pull_dict["fields[19]"] = "duplicate_record___yes"
 
-        if record_numbers is not None:
+        if (
+            record_numbers is not None
+            and isinstance(record_numbers, list)
+            and len(record_numbers) > 0
+        ):
             # Insert into the dictionary a key for each desired record number.
             record_count = 0
 
@@ -165,60 +227,6 @@ class REDCapInterface:
                 record_count += 1
 
         return pull_dict
-
-    def create(self, data_records: Union[dict, pd.DataFrame]) -> bool:
-        """
-        Insert new records into database.
-
-        Parameters
-        ----------
-        data_records : dict, dataframe
-            Must contain the new study_id desired.
-
-        Return
-        ------
-        bool
-
-        Examples
-        --------
-        >>> from src.redcap_api import REDCapInterface
-        >>>
-        >>>
-        >>> redcap_interface_object = REDCapInterface()
-        >>> new_data = {'study_id': '12345', 'name': "Patient's Name", 'mrn': '000000', ...}
-        >>> redcap_interface_object.create(new_data)
-        """
-        if not self.__valid:  # pragma: no cover
-            return None
-
-        if data_records is None:
-            return None
-
-        if isinstance(data_records, dict):
-            data_records = [data_records]
-        elif isinstance(data_records, pd.DataFrame):
-            data_records = data_records.to_dict("records")
-        else:
-            return False
-
-        # Remove fields containing no info.
-        data_records = list(map(self.__discard_empty_fields, data_records))
-
-        # JSONify
-        data = json.dumps(data_records)
-
-        fields = {
-            "token": self.__capmc_token,
-            "content": "record",
-            "format": "json",
-            "type": "flat",
-            "data": data,
-        }
-
-        response = requests.post(
-            self.__api_uri, data=fields, timeout=self.__timeout_sec
-        )
-        return response is not None and response.status_code == 200
 
     def delete(self, record_number: int) -> bool:
         """
@@ -242,10 +250,10 @@ class REDCapInterface:
         >>> redcap_interface_object.delete(12345)
         """
         if not self.__valid:  # pragma: no cover
-            return None
+            return False
 
-        if record_number is None:
-            return None
+        if not isinstance(record_number, int):
+            return False
 
         fields = {
             "token": self.__capmc_token,
@@ -283,11 +291,11 @@ class REDCapInterface:
                     continue
 
                 if isinstance(value, (int, float)) and not math.isnan(value):
-                    input_trimmed[key] = value
+                    input_trimmed[key] = str(value)
 
         return input_trimmed
 
-    def exists(self, record_number: int = None) -> bool:
+    def exists(self, record_number: int) -> bool:
         """
         See if given record number exists in the database.
 
@@ -311,26 +319,23 @@ class REDCapInterface:
         >>> if redcap_interface_object.exists(record_number): ...
         """
         if not self.__valid:  # pragma: no cover
-            return None
+            return False
 
         data_pull = None
 
-        if record_number is not None:
-            if isinstance(record_number, int):
-                data_pull = self.__build_data_pull([record_number])
-            else:
-                self.__log.error("Input 'record_number' is not an int.")
-                raise TypeError("Input 'record_number' is not an int.")
-
-            response = requests.post(
-                self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
-            )
-
-            try:
-                return response.status_code == 200 and "study_id" in response.text
-            except RuntimeError:  # pragma: no cover
-                return False
+        if isinstance(record_number, int):
+            data_pull = self.__build_data_pull([record_number])
         else:
+            self.__log.error("Input 'record_number' is not an int.")
+            raise TypeError("Input 'record_number' is not an int.")
+
+        response = requests.post(
+            self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
+        )
+
+        try:
+            return response.status_code == 200 and "study_id" in response.text
+        except RuntimeError:  # pragma: no cover
             return False
 
     # Check for the presence of a known test record
@@ -351,21 +356,23 @@ class REDCapInterface:
 
         if (
             record is None
-            or not isinstance(record, pd.DataFrame)
+            or not isinstance(record, pandas.DataFrame)
             or "first_name" not in record
             or "last_name" not in record
         ):  # pragma: no cover
-            self.__log.error("Unable to retrieve known test record.")
-            self.__log.error("You might not be connected to the DEV database.")
+            self.__log.error(
+                "Unable to retrieve known test record. "
+                + "You might not be connected to the DEV database."
+            )
             raise RuntimeError(
-                "Unable to retrieve known test record."
+                "Unable to retrieve known test record. "
                 + "You might not be connected to the DEV database."
             )
 
-        return (
-            record.iloc[0].first_name == "TESTER"
-            and record.iloc[0].last_name == "TESTDATA"
-        )
+        record0 = record.iloc[0]
+        first_name_ck = record0.first_name == "TESTER"  # type: ignore[attr-defined]
+        last_name_ck = record0.last_name == "TESTDATA"  # type: ignore[attr-defined]
+        return first_name_ck and last_name_ck
 
     def last_record_number(
         self, except_for: Union[int, list] = None, number_desired: int = 1
@@ -393,7 +400,7 @@ class REDCapInterface:
         >>> highest_record_number_in_use = redcap_interface_object.last_record_number()
         """
         last_valid_record_number = self.next_record_number() - 1
-        valid_record_numbers_found = []
+        valid_record_numbers_found: List[int] = []
 
         if except_for is not None:
             if isinstance(except_for, int):
@@ -472,8 +479,10 @@ class REDCapInterface:
         self.__capmc_token = config.get("CAPMC", "CAPMC_TOKEN")
 
     def retrieve(
-        self, record_numbers: Union[int, list] = None, expanded_record: bool = False
-    ) -> pd.DataFrame:
+        self,
+        record_numbers: Union[int, list, None] = None,
+        expanded_record: bool = False,
+    ) -> pandas.DataFrame:
         """
         Get particular record(s) or all the records.
 
@@ -505,7 +514,7 @@ class REDCapInterface:
             if isinstance(record_numbers, int):
                 record_numbers = [record_numbers]
             elif not isinstance(record_numbers, list):
-                return None
+                return pandas.DataFrame()
 
         data_pull = self.__build_data_pull(
             record_numbers, expanded_record=expanded_record
@@ -525,7 +534,7 @@ class REDCapInterface:
             self.__log.error("Unable to parse query response.")
             raise RuntimeError("Unable to parse query response.") from error
 
-        dates_df = pd.json_normalize(response.json())
+        dates_df = pandas.json_normalize(response.json())
         return dates_df
 
     @staticmethod
@@ -546,7 +555,7 @@ class REDCapInterface:
             level=logging.DEBUG, handlers=[console_handler, logfile_handler]
         )
 
-    def update(self, new_data_records: Union[dict, pd.DataFrame] = None) -> bool:
+    def update(self, new_data_records: Union[dict, pandas.DataFrame] = None) -> bool:
         """
         Change an existing record.
 
@@ -578,16 +587,16 @@ class REDCapInterface:
         >>> redcap_interface_object.update(new_info)
         """
         if not self.__valid:  # pragma: no cover
-            return None
+            return False
 
         if isinstance(new_data_records, dict):
-            new_data_records = [new_data_records]
-        elif isinstance(new_data_records, pd.DataFrame):
-            new_data_records = new_data_records.to_dict("records")
+            new_data_records_list = [new_data_records]
+        elif isinstance(new_data_records, pandas.DataFrame):
+            new_data_records_list = new_data_records.to_dict("records")
         else:
             raise TypeError("Input is neither a dict nor a dataframe.")
 
-        for new_data_record in new_data_records:
+        for new_data_record in new_data_records_list:
             # Get a copy of what's there now.
             record_number = int(new_data_record["study_id"])
             existing_record = self.retrieve(record_number, expanded_record=True)
@@ -603,7 +612,7 @@ class REDCapInterface:
         return True
 
     def __update_one_record(
-        self, new_data_record: dict, existing_record: pd.DataFrame
+        self, new_data_record: dict, existing_record: pandas.DataFrame
     ) -> bool:
         """
         Change an existing record; called by "update" method.
@@ -628,13 +637,13 @@ class REDCapInterface:
         >>> redcap_interface_object.__update_one_record(new_info)
         """
         if not self.__valid:  # pragma: no cover
-            return None
+            return False
 
         if not isinstance(new_data_record, dict):  # pragma: no cover
             self.__log.error("Input is not a dict.")
             raise TypeError("Input is not a dict.")
 
-        if not isinstance(existing_record, pd.DataFrame):  # pragma: no cover
+        if not isinstance(existing_record, pandas.DataFrame):  # pragma: no cover
             self.__log.error("Input is not a dataframe.")
             raise TypeError("Input is not a dataframe.")
 
