@@ -362,11 +362,11 @@ class REDCapInterface:
         ):  # pragma: no cover
             self.__log.error(
                 "Unable to retrieve known test record. "
-                + "You might not be connected to the DEV database."
+                "You might not be connected to the DEV database."
             )
             raise RuntimeError(
                 "Unable to retrieve known test record. "
-                + "You might not be connected to the DEV database."
+                "You might not be connected to the DEV database."
             )
 
         record0 = record.iloc[0]
