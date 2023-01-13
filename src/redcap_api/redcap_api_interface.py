@@ -5,7 +5,6 @@ import configparser
 import json
 import logging
 import math
-import os
 import sys
 from typing import List, Union
 
@@ -84,7 +83,7 @@ class REDCapInterface:
         self.__log = logging.getLogger(__name__)
         self.__timeout_sec = timeout_sec
         self.__setup_logging()
-        self.__get_api_key()
+        self.__read_config_file()
 
         if self.__isdev and not self.__known_test_record_present():  # pragma: no cover
             self.__log.error(
@@ -339,14 +338,6 @@ class REDCapInterface:
             return response.status_code == 200 and "study_id" in response.text
         except RuntimeError:  # pragma: no cover
             return False
-
-    def __get_api_key(self) -> None:
-        if self.__isdev:
-            self.__api_uri = str(os.getenv("API_URL_DEV"))
-            self.__capmc_token = str(os.getenv("CAPMC_TOKEN_DEV"))
-        else:
-            self.__api_uri = str(os.getenv("API_URL"))
-            self.__capmc_token = str(os.getenv("CAPMC_TOKEN"))
 
     # Check for the presence of a known test record
     # to be doubly sure we're connected to DEV_CAPMC_RECRUITMENT.
