@@ -5,6 +5,7 @@ import configparser
 import json
 import logging
 import math
+import os
 import sys
 from typing import List, Union
 
@@ -77,13 +78,13 @@ class REDCapInterface:
         >>> production_redcap_interface_object = REDCapInterface()
         >>> development_redcap_interface_object = REDCapInterface(isdev=True)
         """
-        self.__api_uri = ""
-        self.__capmc_token = ""
+        self.__api_uri: Union[str, None] = None
+        self.__capmc_token: Union[str, None] = None
         self.__isdev = isdev
         self.__log = logging.getLogger(__name__)
         self.__timeout_sec = timeout_sec
         self.__setup_logging()
-        self.__read_config_file()
+        self.__get_api_key()
 
         if self.__isdev and not self.__known_test_record_present():  # pragma: no cover
             self.__log.error(
@@ -150,6 +151,7 @@ class REDCapInterface:
             "data": data,
         }
 
+        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=fields, timeout=self.__timeout_sec
         )
@@ -262,6 +264,7 @@ class REDCapInterface:
             "records[0]": record_number,
         }
 
+        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=fields, timeout=self.__timeout_sec
         )
@@ -321,14 +324,13 @@ class REDCapInterface:
         if not self.__valid:  # pragma: no cover
             return False
 
-        data_pull = None
-
         if isinstance(record_number, int):
             data_pull = self.__build_data_pull([record_number])
         else:
             self.__log.error("Input 'record_number' is not an int.")
             raise TypeError("Input 'record_number' is not an int.")
 
+        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
         )
@@ -337,6 +339,14 @@ class REDCapInterface:
             return response.status_code == 200 and "study_id" in response.text
         except RuntimeError:  # pragma: no cover
             return False
+
+    def __get_api_key(self) -> None:
+        if self.__isdev:
+            self.__api_uri = str(os.getenv("API_URL_DEV"))
+            self.__capmc_token = str(os.getenv("CAPMC_TOKEN_DEV"))
+        else:
+            self.__api_uri = str(os.getenv("API_URL"))
+            self.__capmc_token = str(os.getenv("CAPMC_TOKEN"))
 
     # Check for the presence of a known test record
     # to be doubly sure we're connected to DEV_CAPMC_RECRUITMENT.
@@ -370,19 +380,19 @@ class REDCapInterface:
             )
 
         record0 = record.iloc[0]
-        first_name_ck = record0.first_name == "TESTER"  # type: ignore[attr-defined]
-        last_name_ck = record0.last_name == "TESTDATA"  # type: ignore[attr-defined]
+        first_name_ck = bool(record0.first_name == "TESTER")
+        last_name_ck = bool(record0.last_name == "TESTDATA")
         return first_name_ck and last_name_ck
 
     def last_record_number(
-        self, except_for: Union[int, list] = None, number_desired: int = 1
+        self, except_for: Union[int, list, None] = None, number_desired: int = 1
     ) -> Union[int, list]:
         """
         Lookup the highest record number (study_id) present in the database.
 
         Parameters
         ----------
-        except_for : int, list
+        except_for : int, list or None
             Record numbers to skip over.
         number_desired : int, optional
             How many numbers to return. default is 1
@@ -453,6 +463,7 @@ class REDCapInterface:
             "content": "generateNextRecordName",
         }
 
+        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=fields, timeout=self.__timeout_sec
         )
@@ -519,6 +530,7 @@ class REDCapInterface:
         data_pull = self.__build_data_pull(
             record_numbers, expanded_record=expanded_record
         )
+        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
         )
@@ -538,7 +550,7 @@ class REDCapInterface:
         return dates_df
 
     @staticmethod
-    def __setup_logging():
+    def __setup_logging() -> None:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(logging.INFO)
         console_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
@@ -708,6 +720,7 @@ class REDCapInterface:
         """
         fields = {"token": self.__capmc_token, "content": "version"}
 
+        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=fields, verify=True, timeout=self.__timeout_sec
         )
@@ -717,7 +730,7 @@ class REDCapInterface:
             raise RuntimeError("Unable to query REDCap API for version.")
 
         try:
-            return response.text
+            return str(response.text)
         except TypeError as error:  # pragma: no cover
             self.__log.error("Unable to parse query response.")
             raise RuntimeError("Unable to parse query response.") from error

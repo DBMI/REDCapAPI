@@ -44,4 +44,9 @@ jobs:
       - uses: ./.github/actions/python-poetry-env
         with:
           python-version: ${{ matrix.python-version }}
+      - env:
+        API_URL: ${{ secrets.API_URL }}
+        API_URL_DEV: ${{ secrets.API_URL_DEV }}
+        CAPMC_TOKEN: ${{ secrets.CAPMC_TOKEN }}
+        CAPMC_TOKEN_DEV: ${{ secrets.CAPMC_TOKEN_DEV }}
       - run: poetry run pytest
