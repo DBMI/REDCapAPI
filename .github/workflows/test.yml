@@ -39,14 +39,14 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
+    env:
+      API_URL: ${{ secrets.API_URL }}
+      API_URL_DEV: ${{ secrets.API_URL_DEV }}
+      CAPMC_TOKEN: ${{ secrets.CAPMC_TOKEN }}
+      CAPMC_TOKEN_DEV: ${{ secrets.CAPMC_TOKEN_DEV }}
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/python-poetry-env
         with:
           python-version: ${{ matrix.python-version }}
-      - env:
-        API_URL: ${{ secrets.API_URL }}
-        API_URL_DEV: ${{ secrets.API_URL_DEV }}
-        CAPMC_TOKEN: ${{ secrets.CAPMC_TOKEN }}
-        CAPMC_TOKEN_DEV: ${{ secrets.CAPMC_TOKEN_DEV }}
       - run: poetry run pytest
