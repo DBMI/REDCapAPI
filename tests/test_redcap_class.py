@@ -10,7 +10,7 @@ from datetime import datetime
 
 import pandas
 import pytest
-from utilities import convert_to_date
+from tests.utilities import convert_to_date
 
 from redcap_api import REDCapInterface
 
