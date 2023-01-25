@@ -3,7 +3,7 @@ from typing import Union
 import pandas  # type: ignore[import]
 
 class REDCapInterface:
-    def __init__(self, isdev: bool = ..., timeout_sec: int = ...) -> None: 
+    def __init__(self, isdev: bool = ..., timeout_sec: int = ...) -> None:
         self.__capmc_token = None
         self.__discard_empty_fields = None
         self.__valid = None
@@ -24,18 +24,13 @@ class REDCapInterface:
     ) -> pandas.DataFrame: ...
     def update(self, new_data_records: Union[dict, pandas.DataFrame] = ...) -> bool: ...
     def version(self) -> str: ...
-
     def __build_data_pull(self, record_numbers, expanded_record):
         pass
-
     def __setup_logging(self):
         pass
-
     def __read_config_file(self):
         pass
-
     def __known_test_record_present(self):
         pass
-
     def __update_one_record(self, new_data_record, existing_record):
         pass
