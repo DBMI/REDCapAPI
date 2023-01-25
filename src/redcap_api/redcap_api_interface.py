@@ -213,6 +213,11 @@ class REDCapInterface:
             pull_dict["fields[17]"] = "date_of_last_activity"
             pull_dict["fields[18]"] = "date_added"
             pull_dict["fields[19]"] = "duplicate_record___yes"
+            pull_dict["fields[20]"] = "appointment_clinic"
+            pull_dict["fields[21]"] = "appointment_date"
+            pull_dict["fields[22]"] = "appointment_time"
+            pull_dict["fields[23]"] = "hpi_score"
+            pull_dict["fields[23]"] = "hpi_percentile"
 
         if (
             record_numbers is not None

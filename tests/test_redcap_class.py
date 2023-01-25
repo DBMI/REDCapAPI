@@ -23,7 +23,7 @@ def test_bulk_record_retrieval():
     ------
     bool
     """
-    redcap_interface_object = REDCapInterface(isdev=True, timeout_sec=120)
+    redcap_interface_object = REDCapInterface(isdev=True, timeout_sec=240)
     retrieved_df = redcap_interface_object.retrieve()
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
@@ -270,7 +270,6 @@ def test_object_instantiation(api_version_string):
     #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
     redcap_interface_object = REDCapInterface(isdev=True)
     assert isinstance(redcap_interface_object, REDCapInterface)
-
     version_number = redcap_interface_object.version()
     assert version_number == api_version_string
 
