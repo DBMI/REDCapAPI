@@ -217,7 +217,7 @@ class REDCapInterface:
             pull_dict["fields[21]"] = "appointment_date"
             pull_dict["fields[22]"] = "appointment_time"
             pull_dict["fields[23]"] = "hpi_score"
-            pull_dict["fields[23]"] = "hpi_percentile"
+            pull_dict["fields[24]"] = "hpi_percentile"
 
         if (
             record_numbers is not None
