@@ -31,7 +31,7 @@ disable_error_code = ["call-arg", "call-overload", "import", "var-annotated"]
 
 [tool.poetry]
 name = "redcap_api"
-version = "1.4.0"
+version = "1.4.1"
 description = "A Python wrapper around the REDCap API."
 authors = ["Kevin J. Delaney <kjdelaney@ucsd.edu>"]
 readme = "README.md"
