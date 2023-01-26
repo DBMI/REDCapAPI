@@ -15,69 +15,44 @@ from tests.utilities import convert_to_date
 from redcap_api import REDCapInterface
 
 
-def test_bulk_record_retrieval():
-    """
-    Test retrieving ALL records.
-
-    Return
-    ------
-    bool
-    """
-    redcap_interface_object = REDCapInterface(isdev=True, timeout_sec=240)
-    retrieved_df = redcap_interface_object.retrieve()
-    assert isinstance(retrieved_df, pandas.DataFrame)
-    num_elements_returned: int = retrieved_df.shape[0]
-    assert num_elements_returned > 2
-    assert "dob" in retrieved_df.columns
-
-    # Bulk mode won't work in expanded mode--insufficient memory.
-
-
-def test_create_one_record(fake_record):
+def test_create_one_record(fake_record_dict):
     """
     Test creating ONE record.
-
-    Return
-    ------
-    bool
     """
     redcap_interface_object = REDCapInterface(isdev=True)
+
+    # Some corner cases.
     assert not redcap_interface_object.create(None)
     assert not redcap_interface_object.create("should not work")
+
+    # Create from dict object.
     next_study_id = redcap_interface_object.next_record_number()
-    fake_record["study_id"] = next_study_id
-    assert redcap_interface_object.create(fake_record)
-    test_df = pandas.DataFrame([fake_record], index=[next_study_id])
+    fake_record_dict["study_id"] = next_study_id
+    assert redcap_interface_object.create(fake_record_dict)
+
+    # Create from pandas.DataFrame object.
+    test_df = pandas.DataFrame([fake_record_dict], index=[next_study_id])
     assert redcap_interface_object.create(test_df)
 
 
-def test_create_multiple_records(fake_record):
+def test_create_multiple_records(fake_records_dataframe):
     """
-    Test creating SEVERAL records.
-
-    Return
-    ------
-    bool
+    Test creating SEVERAL records simultaneously.
     """
     redcap_interface_object = REDCapInterface(isdev=True)
-    num_records_to_create = 3
-    success = True
+    next_study_id = redcap_interface_object.next_record_number()
+    study_ids = []
 
-    for __ in range(num_records_to_create):
-        next_study_id = redcap_interface_object.next_record_number()
-        fake_record["study_id"] = next_study_id
-        success &= redcap_interface_object.create(fake_record)
+    for index in range(len(fake_records_dataframe)):
+        study_ids.append(next_study_id + index)
 
-    assert success
+    fake_records_dataframe['study_id'] = study_ids
+    assert redcap_interface_object.create(fake_records_dataframe)
 
 
-def test_date_conversion():
+def test_convert_dates():
     """
     Test converting strings to dates.
-
-    Return
-    ------
-    bool
     """
     date_value_true = datetime.strptime("31/01/1970", "%d/%m/%Y")
     datetime_value_true = datetime.strptime("31/01/1970 12:05:10", "%d/%m/%Y %H:%M:%S")
@@ -143,10 +118,6 @@ def test_date_conversion():
 def test_delete_record(known_fake_record_number):
     """
     Test deleting one record.
-
-    Return
-    ------
-    bool
     """
     redcap_interface_object = REDCapInterface(isdev=True)
     last_record_number = redcap_interface_object.last_record_number(
@@ -165,10 +136,6 @@ def test_delete_record(known_fake_record_number):
 def test_exists():
     """
     Test method for querying whether given record is present.
-
-    Return
-    ------
-    bool
     """
     redcap_interface_object = REDCapInterface(isdev=True)
     last_record_number = redcap_interface_object.last_record_number()
@@ -188,10 +155,6 @@ def test_exists():
 def test_last_record_number(known_fake_record_number):
     """
     Test method for looking up highest used record number.
-
-    Return
-    ------
-    bool
     """
     redcap_interface_object = REDCapInterface(isdev=True)
     last_valid_number = redcap_interface_object.last_record_number()
@@ -213,13 +176,54 @@ def test_last_record_number(known_fake_record_number):
     assert len(last_valid_number) == 2
 
 
-def test_multiple_record_retrieval():
+def test_next_record_number():
     """
-    Test retrieving SEVERAL records.
+    Test method for determining which is next unused record number.
 
     Return
     ------
     bool
+    """
+    redcap_interface_object = REDCapInterface(isdev=True)
+    next_number = redcap_interface_object.next_record_number()
+    assert isinstance(next_number, int)
+
+
+def test_instantiate_object(api_version_string):
+    """
+    Test creating REDCapInterface object.
+    """
+    #   This is the ONLY time in testing that we'll instantiate a REDCapInterface object
+    #    WITHOUT the isdev flag set. It's to ensure we CAN read the production token.
+    production_redcap_interface_object = REDCapInterface(isdev=False)
+    assert isinstance(production_redcap_interface_object, REDCapInterface)
+    version_number = production_redcap_interface_object.version()
+    assert version_number == api_version_string
+
+    #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
+    redcap_interface_object = REDCapInterface(isdev=True)
+    assert isinstance(redcap_interface_object, REDCapInterface)
+    version_number = redcap_interface_object.version()
+    assert version_number == api_version_string
+
+
+def test_retrieve_all_records():
+    """
+    Test retrieving ALL records.
+    """
+    redcap_interface_object = REDCapInterface(isdev=True, timeout_sec=240)
+    retrieved_df = redcap_interface_object.retrieve()
+    assert isinstance(retrieved_df, pandas.DataFrame)
+    num_elements_returned: int = retrieved_df.shape[0]
+    assert num_elements_returned > 2
+    assert "dob" in retrieved_df.columns
+
+    # Bulk mode won't work in expanded mode--insufficient memory.
+
+
+def test_retrieve_multiple_records():
+    """
+    Test retrieving SEVERAL records.
     """
     redcap_interface_object = REDCapInterface(isdev=True)
     two_valid_numbers = redcap_interface_object.last_record_number(number_desired=2)
@@ -239,48 +243,9 @@ def test_multiple_record_retrieval():
     assert "meeting_notes" in retrieved_df.columns
 
 
-def test_next_record_number():
-    """
-    Test method for determining which is next unused record number.
-
-    Return
-    ------
-    bool
-    """
-    redcap_interface_object = REDCapInterface(isdev=True)
-    next_number = redcap_interface_object.next_record_number()
-    assert isinstance(next_number, int)
-
-
-def test_object_instantiation(api_version_string):
-    """
-    Test creating REDCapInterface object.
-
-    Return
-    ------
-    bool
-    """
-    #   This is the ONLY time in testing that we'll instantiate a REDCapInterface object
-    #    WITHOUT the isdev flag set. It's to ensure we CAN read the production token.
-    production_redcap_interface_object = REDCapInterface(isdev=False)
-    assert isinstance(production_redcap_interface_object, REDCapInterface)
-    version_number = production_redcap_interface_object.version()
-    assert version_number == api_version_string
-
-    #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
-    redcap_interface_object = REDCapInterface(isdev=True)
-    assert isinstance(redcap_interface_object, REDCapInterface)
-    version_number = redcap_interface_object.version()
-    assert version_number == api_version_string
-
-
-def test_single_record_retrieval():
+def test_retrieve_single_record():
     """
     Test retrieving ONE record.
-
-    Return
-    ------
-    bool
     """
     redcap_interface_object = REDCapInterface(isdev=True)
     last_record_number = redcap_interface_object.last_record_number()
@@ -308,13 +273,81 @@ def test_single_record_retrieval():
     assert "meeting_notes" in retrieved_df.columns
 
 
-def test_update_record(known_fake_record_number):
+def test_update_errors(known_fake_record_number):
     """
     Test updating given record.
+    """
+    redcap_interface_object = REDCapInterface(isdev=True)
+    last_record_number = redcap_interface_object.last_record_number(
+        except_for=known_fake_record_number
+    )
 
-    Return
-    ------
-    bool
+    if last_record_number is None or last_record_number <= 0:  # pragma: no cover
+        raise Exception("Unable to find any records I'm allowed to update.")
+
+    # Test inputs that should raise errors.
+    with pytest.raises(TypeError):
+        redcap_interface_object.update("should throw error")
+
+    right_now = datetime.now()
+    right_now_string = datetime.strftime(right_now, "%Y-%m-%d")
+    new_info = {"study_id": str(last_record_number), "date_of_last_activity": right_now_string,
+                "this_column_does_not_exist": "this won't work"}
+
+    # What if the attempted update can't be inserted? Ensure
+    new_info_df = pandas.DataFrame(data=new_info, index=[0])
+
+    with pytest.raises(RuntimeError) as error_raised:
+        redcap_interface_object.update(new_info_df)
+        assert "Unable to update; original record was restored." == str(
+            error_raised.value
+        )
+
+
+def test_update_multiple_records(known_fake_record_number):
+    """
+    Test updating multiple records.
+    """
+    redcap_interface_object = REDCapInterface(isdev=True)
+    last_record_numbers = redcap_interface_object.last_record_number(
+        except_for=known_fake_record_number,
+        number_desired=3
+    )
+
+    if not isinstance(last_record_numbers, list) or\
+            any([num <= 0 for num in last_record_numbers]):  # pragma: no cover
+        raise Exception("Unable to find any records I'm allowed to update.")
+
+    right_now = datetime.now()
+    right_now_string = datetime.strftime(right_now, "%Y-%m-%d")
+
+    # Build dataframe with updated records.
+    dataframes = []
+
+    for this_study_id in last_record_numbers:
+        new_info = {
+            "study_id": str(this_study_id),
+            "date_of_last_activity": right_now_string,
+        }
+        dataframes.append(pandas.DataFrame([new_info], index=[this_study_id]))
+
+    # Test with dataframe input.
+    new_info_df = pandas.concat(dataframes)
+    assert redcap_interface_object.update(new_info_df)
+
+    # Check that the date_of_last_activity field was really updated in every record.
+    for this_study_id in last_record_numbers:
+        updated_record = redcap_interface_object.retrieve(this_study_id)
+        assert updated_record is not None
+        assert isinstance(updated_record, pandas.DataFrame)
+        assert "date_of_last_activity" in updated_record
+        retrieved_datestring = updated_record["date_of_last_activity"][0]
+        assert right_now_string == retrieved_datestring
+
+
+def test_update_single_record(known_fake_record_number):
+    """
+    Test updating given record.
     """
     redcap_interface_object = REDCapInterface(isdev=True)
     last_record_number = redcap_interface_object.last_record_number(
