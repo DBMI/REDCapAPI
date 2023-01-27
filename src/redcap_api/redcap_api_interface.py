@@ -138,6 +138,13 @@ class REDCapInterface:
 
         # Remove fields containing no info.
         data_records_list = list(map(self.__discard_empty_fields, data_records_list))
+        next_study_id = self.next_record_number()
+
+        # Ensure 'study_id' is included.
+        for index, record in enumerate(data_records_list):
+            if 'study_id' not in record:
+                record['study_id'] = next_study_id + index
+                data_records_list[index] = record
 
         # JSONify
         data = json.dumps(data_records_list)
@@ -157,7 +164,7 @@ class REDCapInterface:
         return response is not None and response.status_code == 200
 
     def __build_data_pull(
-        self, record_numbers: Union[list, None], expanded_record: bool = False
+            self, record_numbers: Union[list, None], expanded_record: bool = False
     ) -> dict:
         """
         Assemble dict used when retrieving data records.
@@ -220,9 +227,9 @@ class REDCapInterface:
             pull_dict["fields[24]"] = "hpi_percentile"
 
         if (
-            record_numbers is not None
-            and isinstance(record_numbers, list)
-            and len(record_numbers) > 0
+                record_numbers is not None
+                and isinstance(record_numbers, list)
+                and len(record_numbers) > 0
         ):
             # Insert into the dictionary a key for each desired record number.
             record_count = 0
@@ -361,10 +368,10 @@ class REDCapInterface:
         record = self.retrieve(test_record_number)
 
         if (
-            record is None
-            or not isinstance(record, pandas.DataFrame)
-            or "first_name" not in record
-            or "last_name" not in record
+                record is None
+                or not isinstance(record, pandas.DataFrame)
+                or "first_name" not in record
+                or "last_name" not in record
         ):  # pragma: no cover
             self.__log.error(
                 "Unable to retrieve known test record. "
@@ -381,7 +388,7 @@ class REDCapInterface:
         return first_name_ck and last_name_ck
 
     def last_record_number(
-        self, except_for: Union[int, list, None] = None, number_desired: int = 1
+            self, except_for: Union[int, list, None] = None, number_desired: int = 1
     ) -> Union[int, list]:
         """
         Lookup the highest record number (study_id) present in the database.
@@ -419,8 +426,8 @@ class REDCapInterface:
 
         while len(valid_record_numbers_found) < number_desired:
             while (
-                not self.exists(last_valid_record_number)
-                or last_valid_record_number in except_for
+                    not self.exists(last_valid_record_number)
+                    or last_valid_record_number in except_for
             ):
                 if last_valid_record_number > 0:
                     last_valid_record_number -= 1
@@ -486,9 +493,9 @@ class REDCapInterface:
         self.__capmc_token = config.get("CAPMC", "CAPMC_TOKEN")
 
     def retrieve(
-        self,
-        record_numbers: Union[int, list, None] = None,
-        expanded_record: bool = False,
+            self,
+            record_numbers: Union[int, list, None] = None,
+            expanded_record: bool = False,
     ) -> pandas.DataFrame:
         """
         Get particular record(s) or all the records.
@@ -533,9 +540,9 @@ class REDCapInterface:
 
         try:
             if (
-                not response
-                or response.status_code != 200
-                or "study_id" not in response.text
+                    not response
+                    or response.status_code != 200
+                    or "study_id" not in response.text
             ):
                 raise RuntimeError("Unable to query REDCap API for records.")
         except TypeError as error:  # pragma: no cover
@@ -620,7 +627,7 @@ class REDCapInterface:
         return True
 
     def __update_one_record(
-        self, new_data_record: dict, existing_record: pandas.DataFrame
+            self, new_data_record: dict, existing_record: pandas.DataFrame
     ) -> bool:
         """
         Change an existing record; called by "update" method.
