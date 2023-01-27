@@ -27,7 +27,6 @@ def test_create_one_record(fake_record_dict):
 
     # Create from dict object.
     next_study_id = redcap_interface_object.next_record_number()
-    fake_record_dict["study_id"] = next_study_id
     assert redcap_interface_object.create(fake_record_dict)
 
     # Create from pandas.DataFrame object.
@@ -40,13 +39,6 @@ def test_create_multiple_records(fake_records_dataframe):
     Test creating SEVERAL records simultaneously.
     """
     redcap_interface_object = REDCapInterface(isdev=True)
-    next_study_id = redcap_interface_object.next_record_number()
-    study_ids = []
-
-    for index in range(len(fake_records_dataframe)):
-        study_ids.append(next_study_id + index)
-
-    fake_records_dataframe['study_id'] = study_ids
     assert redcap_interface_object.create(fake_records_dataframe)
 
 
