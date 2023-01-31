@@ -11,6 +11,6 @@ __credits__ = (
     + "School of Medicine; Department of Biomedical Informatics"
 )
 
-from redcapapi.redcap_api_interface import (  # type: ignore[import] # noqa: F401
+from redcapapi.redcap_api_interface import (  # noqa: F401
     REDCapInterface,
 )
