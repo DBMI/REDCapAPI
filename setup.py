@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-    name="redcap_api",
-    version="1.4.2",
+    name="redcapapi",
+    version="1.4.4",
     package_dir={"": "src"},
-    packages=["redcap_api"],
+    packages=["redcapapi"],
     url="https://github.com/DBMI/REDCapAPI",
     license="",
     author="DBMI Team",

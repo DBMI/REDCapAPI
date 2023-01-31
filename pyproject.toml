@@ -30,8 +30,8 @@ ignore_missing_imports = true
 disable_error_code = ["call-arg", "call-overload", "import", "var-annotated"]
 
 [tool.poetry]
-name = "redcap_api"
-version = "1.4.2"
+name = "redcapapi"
+version = "1.4.4"
 description = "A Python wrapper around the REDCap API."
 authors = ["Kevin J. Delaney <kjdelaney@ucsd.edu>"]
 readme = "README.md"
