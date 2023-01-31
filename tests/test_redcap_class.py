@@ -12,7 +12,7 @@ import pandas
 import pytest
 from tests.utilities import convert_to_date
 
-from redcap_api import REDCapInterface
+from redcapapi import REDCapInterface
 
 
 def test_create_one_record(fake_record_dict):
@@ -144,6 +144,24 @@ def test_exists():
         redcap_interface_object.exists("should throw error")
 
 
+def test_instantiate_object(api_version_string):
+    """
+    Test creating REDCapInterface object.
+    """
+    #   This is the ONLY time in testing that we'll instantiate a REDCapInterface object
+    #    WITHOUT the isdev flag set. It's to ensure we CAN read the production token.
+    production_redcap_interface_object = REDCapInterface(isdev=False)
+    assert isinstance(production_redcap_interface_object, REDCapInterface)
+    version_number = production_redcap_interface_object.version()
+    assert version_number == api_version_string
+
+    #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
+    redcap_interface_object = REDCapInterface(isdev=True)
+    assert isinstance(redcap_interface_object, REDCapInterface)
+    version_number = redcap_interface_object.version()
+    assert version_number == api_version_string
+
+
 def test_last_record_number(known_fake_record_number):
     """
     Test method for looking up highest used record number.
@@ -179,24 +197,6 @@ def test_next_record_number():
     redcap_interface_object = REDCapInterface(isdev=True)
     next_number = redcap_interface_object.next_record_number()
     assert isinstance(next_number, int)
-
-
-def test_instantiate_object(api_version_string):
-    """
-    Test creating REDCapInterface object.
-    """
-    #   This is the ONLY time in testing that we'll instantiate a REDCapInterface object
-    #    WITHOUT the isdev flag set. It's to ensure we CAN read the production token.
-    production_redcap_interface_object = REDCapInterface(isdev=False)
-    assert isinstance(production_redcap_interface_object, REDCapInterface)
-    version_number = production_redcap_interface_object.version()
-    assert version_number == api_version_string
-
-    #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
-    redcap_interface_object = REDCapInterface(isdev=True)
-    assert isinstance(redcap_interface_object, REDCapInterface)
-    version_number = redcap_interface_object.version()
-    assert version_number == api_version_string
 
 
 def test_retrieve_all_records():
@@ -387,12 +387,7 @@ def test_update_single_record(known_fake_record_number):
     with pytest.raises(TypeError):
         redcap_interface_object.update("should throw error")
 
-    # What if the attempted update can't be inserted? Ensure
+    # What if the attempted update can't be inserted?
     new_info["this_column_does_not_exist"] = "this won't work"
     new_info_df = pandas.DataFrame(data=new_info, index=[0])
-
-    with pytest.raises(RuntimeError) as error_raised:
-        redcap_interface_object.update(new_info_df)
-        assert "Unable to update; original record was restored." == str(
-            error_raised.value
-        )
+    assert not redcap_interface_object.update(new_info_df)
