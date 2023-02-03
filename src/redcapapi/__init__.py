@@ -4,13 +4,11 @@ REDCap API Calls
 A wrapper around the REDCap API, allowing Python code to connect with the API.
 """
 
-__version__ = "1.3.8"
+__version__ = "1.4.5"
 __author__ = "DBMI Team"
 __credits__ = (
     "University of California San Diego"
     + "School of Medicine; Department of Biomedical Informatics"
 )
 
-from redcapapi.redcap_api_interface import (  # noqa: F401
-    REDCapInterface,
-)
+from redcap_api_interface import REDCapInterface  # type: ignore[import] # noqa: F401
