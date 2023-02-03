@@ -3,13 +3,12 @@ Module: contains class REDCapInterface, providing a wrapper around the REDCap AP
 """
 import configparser
 import json
-import logging
 import math
-import sys
 from typing import List, Union
 
 import pandas  # type: ignore[import]
 import requests
+from redcaputilities.logging import setup_logging
 
 
 class REDCapInterface:
@@ -77,7 +76,7 @@ class REDCapInterface:
         >>> production_redcap_interface_object = REDCapInterface()
         >>> development_redcap_interface_object = REDCapInterface(isdev=True)
         """
-        self.__log = self.__setup_logging()
+        self.__log = setup_logging(log_filename="redcap_api.log")
         self.__log.info("REDCapInterface object instantiated.")
         self.__api_uri: Union[str, None] = None
         self.__capmc_token: Union[str, None] = None
@@ -560,28 +559,6 @@ class REDCapInterface:
 
         dates_df = pandas.json_normalize(response.json())
         return dates_df
-
-    @staticmethod
-    def __setup_logging() -> logging.Logger:
-        # Clear up any old stuff.
-        for handler in logging.root.handlers[:]:
-            logging.root.removeHandler(handler)
-
-        logger = logging.getLogger(__name__)
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-        console_handler.setFormatter(console_format)
-
-        logfile_handler = logging.FileHandler(filename="redcap_api_interface.log")
-        logfile_format = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-        logfile_handler.setFormatter(logfile_format)
-
-        logger.addHandler(console_handler)
-        logger.addHandler(logfile_handler)
-        logger.setLevel(logging.INFO)
-        return logger
 
     def update(self, new_data_records: Union[dict, pandas.DataFrame] = None) -> bool:
         """
