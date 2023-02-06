@@ -291,9 +291,6 @@ def test_update_errors(known_fake_record_number):
 
     with pytest.raises(RuntimeError) as error_raised:
         redcap_interface_object.update(new_info_df)
-        assert "Unable to update; original record was restored." == str(
-            error_raised.value
-        )
 
 
 def test_update_multiple_records(known_fake_record_number):

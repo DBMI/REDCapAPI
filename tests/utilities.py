@@ -1,9 +1,9 @@
 """
 Module utilities. Provides place for needed static methods.
 """
+import re
 from datetime import datetime
 from typing import Union
-import re
 
 
 def convert_to_date(date_string: str) -> Union[datetime, None]:
