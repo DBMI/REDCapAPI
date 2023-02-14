@@ -251,8 +251,9 @@ def test_retrieve_single_record():
     assert isinstance(retrieved_df, pandas.DataFrame)
     assert len(retrieved_df) == 0
 
-    with pytest.raises(RuntimeError):
-        redcap_interface_object.retrieve(-1)
+    retrieved_df = redcap_interface_object.retrieve(-1)
+    assert isinstance(retrieved_df, pandas.DataFrame)
+    assert len(retrieved_df) == 0
 
     # Test expanded mode.
     retrieved_df = redcap_interface_object.retrieve(
@@ -283,14 +284,15 @@ def test_update_errors(known_fake_record_number):
 
     right_now = datetime.now()
     right_now_string = datetime.strftime(right_now, "%Y-%m-%d")
-    new_info = {"study_id": str(last_record_number), "date_of_last_activity": right_now_string,
-                "this_column_does_not_exist": "this won't work"}
+    new_info = {
+        "study_id": str(last_record_number),
+        "date_of_last_activity": right_now_string,
+        "this_column_does_not_exist": "this won't work",
+    }
 
     # What if the attempted update can't be inserted? Ensure
     new_info_df = pandas.DataFrame(data=new_info, index=[0])
-
-    with pytest.raises(RuntimeError) as error_raised:
-        redcap_interface_object.update(new_info_df)
+    assert not redcap_interface_object.update(new_info_df)
 
 
 def test_update_multiple_records(known_fake_record_number):
@@ -299,12 +301,12 @@ def test_update_multiple_records(known_fake_record_number):
     """
     redcap_interface_object = REDCapInterface(isdev=True)
     last_record_numbers = redcap_interface_object.last_record_number(
-        except_for=known_fake_record_number,
-        number_desired=3
+        except_for=known_fake_record_number, number_desired=3
     )
 
-    if not isinstance(last_record_numbers, list) or\
-            any([num <= 0 for num in last_record_numbers]):  # pragma: no cover
+    if not isinstance(last_record_numbers, list) or any(
+        [num <= 0 for num in last_record_numbers]
+    ):  # pragma: no cover
         raise Exception("Unable to find any records I'm allowed to update.")
 
     right_now = datetime.now()
