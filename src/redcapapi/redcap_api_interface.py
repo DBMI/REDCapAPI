@@ -531,12 +531,14 @@ class REDCapInterface:
         >>> df_all = redcap_interface_object.retrieve()
         >>> df_selected = redcap_interface_object.retrieve([1234, 2345])
         """
+        df = pandas.DataFrame()
+
         # No need to check for self.__valid here; it's always OK to retrieve records.
         if record_numbers is not None:
             if isinstance(record_numbers, int):
                 record_numbers = [record_numbers]
             elif not isinstance(record_numbers, list):
-                return pandas.DataFrame()
+                return df
 
         data_pull = self.__build_data_pull(
             record_numbers, expanded_record=expanded_record
@@ -552,13 +554,14 @@ class REDCapInterface:
                 or response.status_code != 200
                 or "study_id" not in response.text
             ):
-                raise RuntimeError("Unable to query REDCap API for records.")
+                self.__log.info("No response in query for record [%d].", record_numbers)
+                return df
         except TypeError as error:  # pragma: no cover
             self.__log.exception("Unable to parse query response.")
             raise RuntimeError("Unable to parse query response.") from error
 
-        dates_df = pandas.json_normalize(response.json())
-        return dates_df
+        df = pandas.json_normalize(response.json())
+        return df
 
     def update(self, new_data_records: Union[dict, pandas.DataFrame] = None) -> bool:
         """
