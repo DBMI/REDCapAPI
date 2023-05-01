@@ -544,6 +544,7 @@ class REDCapInterface:
             record_numbers, expanded_record=expanded_record
         )
         assert self.__api_uri is not None, "Unable to read 'API_URL.'"
+        self.__log.info("Requesting REDCap data.")
         response = requests.post(
             self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
         )
@@ -561,6 +562,7 @@ class REDCapInterface:
             raise RuntimeError("Unable to parse query response.") from error
 
         df = pandas.json_normalize(response.json())
+        self.__log.info("Received [%d] records.", len(df))
         return df
 
     def update(self, new_data_records: Union[dict, pandas.DataFrame] = None) -> bool:
