@@ -555,14 +555,14 @@ class REDCapInterface:
                 or response.status_code != 200
                 or "study_id" not in response.text
             ):
-                self.__log.info("No response in query for record [%d].", record_numbers)
+                self.__log.info("No response in query for record %d.", record_numbers)
                 return df
         except TypeError as error:  # pragma: no cover
             self.__log.exception("Unable to parse query response.")
             raise RuntimeError("Unable to parse query response.") from error
 
         df = pandas.json_normalize(response.json())
-        self.__log.info("Received [%d] records.", len(df))
+        self.__log.info("Received %d records.", len(df))
         return df
 
     def update(self, new_data_records: Union[dict, pandas.DataFrame] = None) -> bool:
