@@ -1,16 +1,17 @@
 """
 Contains test fixtures available across all test_*.py files.
 """
+import re
 from datetime import datetime
+
 import pandas
 import pytest
-import re
 from faker import Faker
 
 
 @pytest.fixture(name="api_version_string")
 def fixture_api_version_string() -> str:
-    return "12.4.6"
+    return "13.1.29"
 
 
 # https://stackoverflow.com/a/33879151/20241849

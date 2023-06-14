@@ -10,9 +10,9 @@ from datetime import datetime
 
 import pandas
 import pytest
-from tests.utilities import convert_to_date
 
-from redcapapi import REDCapInterface
+from redcapapi import DataRequest, REDCapInterface
+from tests.utilities import convert_to_date
 
 
 def test_create_one_record(fake_record_dict):
@@ -227,7 +227,7 @@ def test_retrieve_multiple_records():
 
     # Expanded mode.
     retrieved_df = redcap_interface_object.retrieve(
-        record_numbers=two_valid_numbers, expanded_record=True
+        record_numbers=two_valid_numbers, data_request=DataRequest.Expanded
     )
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
@@ -257,7 +257,7 @@ def test_retrieve_single_record():
 
     # Test expanded mode.
     retrieved_df = redcap_interface_object.retrieve(
-        record_numbers=last_record_number, expanded_record=True
+        record_numbers=last_record_number, data_request=DataRequest.Expanded
     )
 
     assert isinstance(retrieved_df, pandas.DataFrame)
@@ -265,128 +265,12 @@ def test_retrieve_single_record():
     assert num_elements_returned == 1
     assert "meeting_notes" in retrieved_df.columns
 
-
-def test_update_errors(known_fake_record_number):
-    """
-    Test updating given record.
-    """
-    redcap_interface_object = REDCapInterface(isdev=True)
-    last_record_number = redcap_interface_object.last_record_number(
-        except_for=known_fake_record_number
+    # Test "Velos" mode.
+    retrieved_df = redcap_interface_object.retrieve(
+        record_numbers=last_record_number, data_request=DataRequest.Velos
     )
 
-    if last_record_number is None or last_record_number <= 0:  # pragma: no cover
-        raise Exception("Unable to find any records I'm allowed to update.")
-
-    # Test inputs that should raise errors.
-    with pytest.raises(TypeError):
-        redcap_interface_object.update("should throw error")
-
-    right_now = datetime.now()
-    right_now_string = datetime.strftime(right_now, "%Y-%m-%d")
-    new_info = {
-        "study_id": str(last_record_number),
-        "date_of_last_activity": right_now_string,
-        "this_column_does_not_exist": "this won't work",
-    }
-
-    # What if the attempted update can't be inserted? Ensure
-    new_info_df = pandas.DataFrame(data=new_info, index=[0])
-    assert not redcap_interface_object.update(new_info_df)
-
-
-def test_update_multiple_records(known_fake_record_number):
-    """
-    Test updating multiple records.
-    """
-    redcap_interface_object = REDCapInterface(isdev=True)
-    last_record_numbers = redcap_interface_object.last_record_number(
-        except_for=known_fake_record_number, number_desired=3
-    )
-
-    if not isinstance(last_record_numbers, list) or any(
-        [num <= 0 for num in last_record_numbers]
-    ):  # pragma: no cover
-        raise Exception("Unable to find any records I'm allowed to update.")
-
-    right_now = datetime.now()
-    right_now_string = datetime.strftime(right_now, "%Y-%m-%d")
-
-    # Build dataframe with updated records.
-    dataframes = []
-
-    for this_study_id in last_record_numbers:
-        new_info = {
-            "study_id": str(this_study_id),
-            "date_of_last_activity": right_now_string,
-        }
-        dataframes.append(pandas.DataFrame([new_info], index=[this_study_id]))
-
-    # Test with dataframe input.
-    new_info_df = pandas.concat(dataframes)
-    assert redcap_interface_object.update(new_info_df)
-
-    # Check that the date_of_last_activity field was really updated in every record.
-    for this_study_id in last_record_numbers:
-        updated_record = redcap_interface_object.retrieve(this_study_id)
-        assert updated_record is not None
-        assert isinstance(updated_record, pandas.DataFrame)
-        assert "date_of_last_activity" in updated_record
-        retrieved_datestring = updated_record["date_of_last_activity"][0]
-        assert right_now_string == retrieved_datestring
-
-
-def test_update_single_record(known_fake_record_number):
-    """
-    Test updating given record.
-    """
-    redcap_interface_object = REDCapInterface(isdev=True)
-    last_record_number = redcap_interface_object.last_record_number(
-        except_for=known_fake_record_number
-    )
-
-    if last_record_number is None or last_record_number <= 0:  # pragma: no cover
-        raise Exception("Unable to find any records I'm allowed to update.")
-
-    right_now = datetime.now()
-    right_now_string = datetime.strftime(right_now, "%Y-%m-%d")
-    new_info = {
-        "study_id": str(last_record_number),
-        "date_of_last_activity": right_now_string,
-    }
-    # Test with dictionary as input.
-    assert redcap_interface_object.update(new_info)
-
-    # Check that the date_of_last_activity field was really updated.
-    updated_record = redcap_interface_object.retrieve(last_record_number)
-    assert updated_record is not None
-    assert isinstance(updated_record, pandas.DataFrame)
-    assert "date_of_last_activity" in updated_record
-    retrieved_datestring = updated_record["date_of_last_activity"][0]
-    assert right_now_string == retrieved_datestring
-
-    # Test again with dataframe input.
-    right_now_string = datetime.strftime(right_now, "%Y-%m-%d")
-    new_info = {
-        "study_id": str(last_record_number),
-        "date_of_last_activity": right_now_string,
-    }
-    new_info_df = pandas.DataFrame(data=new_info, index=[0])
-    assert redcap_interface_object.update(new_info_df)
-
-    # Check that the date_of_last_activity field was really updated.
-    updated_record = redcap_interface_object.retrieve(last_record_number)
-    assert updated_record is not None
-    assert isinstance(updated_record, pandas.DataFrame)
-    assert "date_of_last_activity" in updated_record
-    retrieved_datestring = updated_record["date_of_last_activity"][0]
-    assert right_now_string == retrieved_datestring
-
-    # Test inputs that should raise errors.
-    with pytest.raises(TypeError):
-        redcap_interface_object.update("should throw error")
-
-    # What if the attempted update can't be inserted?
-    new_info["this_column_does_not_exist"] = "this won't work"
-    new_info_df = pandas.DataFrame(data=new_info, index=[0])
-    assert not redcap_interface_object.update(new_info_df)
+    assert isinstance(retrieved_df, pandas.DataFrame)
+    num_elements_returned: int = retrieved_df.shape[0]
+    assert num_elements_returned == 1
+    assert "entered_velos___yes" in retrieved_df.columns

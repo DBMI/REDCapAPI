@@ -4,11 +4,18 @@ Module: contains class REDCapInterface, providing a wrapper around the REDCap AP
 import configparser
 import json
 import math
+from enum import Enum
 from typing import List, Union
 
 import pandas  # type: ignore[import]
 import requests
 from redcaputilities.logging import setup_logging
+
+
+class DataRequest(Enum):
+    Expanded = 1
+    Standard = 2
+    Velos = 3
 
 
 class REDCapInterface:
@@ -31,11 +38,6 @@ class REDCapInterface:
     retrieve(record_numbers)
         When called with either a single record number or a list of numbers,
         retrieves those records.
-    update(data_record)
-        Overwrites the existing record at the study_id record number
-        in the argument dict or dataframe.
-        If there is no existing record with that study_id, creates a new record.
-        Only overwrites the properties present in the input argument.
     delete(record_number)
         Deletes the data record at the specified study_id value.
     exists(record_number)
@@ -48,7 +50,7 @@ class REDCapInterface:
         Returns the version number of the REDCap API in use.
     """
 
-    def __init__(self, isdev: bool = False, timeout_sec: int = 10):
+    def __init__(self, isdev: bool = False, timeout_sec: int = 30):
         """
         Create instance of `REDCapInterface` class.
 
@@ -172,7 +174,9 @@ class REDCapInterface:
         return True
 
     def __build_data_pull(
-        self, record_numbers: Union[list, None], expanded_record: bool = False
+        self,
+        record_numbers: Union[list, None],
+        data_request: DataRequest = DataRequest.Standard,
     ) -> dict:
         """
         Assemble dict used when retrieving data records.
@@ -181,10 +185,16 @@ class REDCapInterface:
         ----------
         record_numbers : list Optional
             default is None (to retrieve ALL records)
-        expanded_record : bool
-            If true, returns all fields. Otherwise, just returns study_id, dob,
-            primary_consent_date, core_participant_date, date_of_last_activity
-            default is False
+        data_request : DataRequest, optional
+            How many fields do you want?
+                Standard (default):
+                    returns study_id, dob, primary_consent_date,
+                    core_participant_date, date_of_last_activity
+                Expanded:
+                    returns ALL fields (this is probably too big
+                    if also requesting ALL the records)
+                Velos:
+                    entered_velos, mrn, study_id, time_visit_ended, type_of_draw
 
         Return
         ------
@@ -205,9 +215,7 @@ class REDCapInterface:
             "returnFormat": "json",
         }
 
-        # For now, restrict the fields to just this list
-        #  ->unless<- we're in DEV mode AND "expanded_record" selected.
-        if not self.__isdev or not expanded_record:
+        if data_request == DataRequest.Standard:
             pull_dict["fields[0]"] = "study_id"
             pull_dict["fields[1]"] = "mrn"
             pull_dict["fields[2]"] = "first_name"
@@ -233,6 +241,12 @@ class REDCapInterface:
             pull_dict["fields[22]"] = "appointment_time"
             pull_dict["fields[23]"] = "hpi_score"
             pull_dict["fields[24]"] = "hpi_percentile"
+        elif data_request == DataRequest.Velos:
+            pull_dict["fields[0]"] = "study_id"
+            pull_dict["fields[1]"] = "mrn"
+            pull_dict["fields[2]"] = "entered_velos"
+            pull_dict["fields[3]"] = "time_visit_ended"
+            pull_dict["fields[4]"] = "type_of_draw"
 
         if (
             record_numbers is not None
@@ -503,7 +517,7 @@ class REDCapInterface:
     def retrieve(
         self,
         record_numbers: Union[int, list, None] = None,
-        expanded_record: bool = False,
+        data_request: DataRequest = DataRequest.Standard,
     ) -> pandas.DataFrame:
         """
         Get particular record(s) or all the records.
@@ -513,10 +527,16 @@ class REDCapInterface:
         record_numbers : int or list, optional
             If specified, returns just that/those record(s).
             If None or unspecified, returns all the records. default is None
-        expanded_record : bool, optional
-            If true, returns all the fields available. Otherwise, returns study_id, dob,
-            primary_consent_date, core_participant_date, date_of_last_activity
-            default is False
+        data_request : DataRequest, optional
+            How many fields do you want?
+                Standard (default):
+                    returns study_id, dob, primary_consent_date,
+                    core_participant_date, date_of_last_activity
+                Expanded:
+                    returns ALL fields (this is probably too big
+                    if also requesting ALL the records)
+                Velos:
+                    entered_velos, mrn, study_id, time_visit_ended, type_of_draw
 
         Return
         ------
@@ -540,9 +560,7 @@ class REDCapInterface:
             elif not isinstance(record_numbers, list):
                 return df
 
-        data_pull = self.__build_data_pull(
-            record_numbers, expanded_record=expanded_record
-        )
+        data_pull = self.__build_data_pull(record_numbers, data_request=data_request)
         assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         self.__log.info("Requesting REDCap data.")
         response = requests.post(
@@ -564,146 +582,6 @@ class REDCapInterface:
         df = pandas.json_normalize(response.json())
         self.__log.info("Received %d records.", len(df))
         return df
-
-    def update(self, new_data_records: Union[dict, pandas.DataFrame] = None) -> bool:
-        """
-        Change an existing record.
-
-        Since there is no native "update" method in the REDCap API, this wrapper method:
-        1. makes two copies of the existing record: one to modify, one as a backup
-        2. deletes the existing record
-        3. modifies the copy of the existing record
-        4. tries to insert the modified record into the database under the same study_id
-        5. if the insert fails, tries to restore the backup copy of the record
-        by inserting that into the database under the same study_id
-        6. if unable to insert the backup, throws an exception
-
-        Parameters
-        ----------
-        new_data_records : dict or dataframe
-
-        Return
-        ------
-        bool
-
-        Examples
-        --------
-        >>> from src.redcapapi import REDCapInterface
-        >>>
-        >>>
-        >>> redcap_interface_object = REDCapInterface()
-        >>> new_info = {'study_id': str(record_number_to_update),
-        >>>             'date_of_last_activity': right_now}
-        >>> redcap_interface_object.update(new_info)
-        """
-        if not self.__valid:  # pragma: no cover
-            return False
-
-        if isinstance(new_data_records, dict):
-            new_data_records_list = [new_data_records]
-        elif isinstance(new_data_records, pandas.DataFrame):
-            new_data_records_list = new_data_records.to_dict("records")
-        else:
-            raise TypeError("Input is neither a dict nor a dataframe.")
-
-        for new_data_record in new_data_records_list:
-            # Get a copy of what's there now.
-            record_number = int(new_data_record["study_id"])
-            existing_record = self.retrieve(record_number, expanded_record=True)
-
-            if existing_record is None or len(existing_record) == 0:
-                # There's no match--so create a new one.
-                if not self.create(new_data_record):  # pragma: no cover
-                    self.__log.exception("Unable to create new record.")
-                    raise RuntimeError("Unable to create new record.")
-
-            if self.__update_one_record(new_data_record, existing_record):
-                self.__log.info("Updated record %d", record_number)
-            else:
-                return False
-
-        return True
-
-    def __update_one_record(
-        self, new_data_record: dict, existing_record: pandas.DataFrame
-    ) -> bool:
-        """
-        Change an existing record; called by "update" method.
-
-        Parameters
-        ----------
-        new_data_record : dict
-        existing_record : dataframe
-
-        Return
-        ------
-        bool
-
-        Examples
-        --------
-        >>> from src.redcapapi import REDCapInterface
-        >>>
-        >>>
-        >>> redcap_interface_object = REDCapInterface()
-        >>> new_info = {'study_id': str(record_number_to_update),
-        >>>             'date_of_last_activity': right_now}
-        >>> redcap_interface_object.__update_one_record(new_info)
-        """
-        if not self.__valid:  # pragma: no cover
-            return False
-
-        if not isinstance(new_data_record, dict):  # pragma: no cover
-            self.__log.exception("Input is not a dict.")
-            raise TypeError("Input is not a dict.")
-
-        if not isinstance(existing_record, pandas.DataFrame):  # pragma: no cover
-            self.__log.exception("Input is not a dataframe.")
-            raise TypeError("Input is not a dataframe.")
-
-        # Delete existing record so that we'll be allowed to
-        #  insert a record with the same record number.
-        record_number = int(new_data_record["study_id"])
-
-        if not self.delete(record_number):  # pragma: no cover
-            self.__log.exception("Unable to delete old record %d.", record_number)
-            raise RuntimeError(f"Unable to delete old record {record_number}.")
-
-        draft_record = existing_record.copy()
-
-        # Overwrite our copy of what's currently in REDCap
-        #  with whatever properties we've been given.
-        for key in new_data_record:
-            # Not allowed to update the primary key "study_id".
-            if key != "study_id":
-                try:
-                    new_value = new_data_record[key]
-                    draft_record[key] = new_value
-
-                except KeyError as error:  # pragma: no cover
-                    self.__log.exception("Unable to update dataframe field %s.", key)
-                    raise KeyError(
-                        f"Unable to update dataframe field {key}."
-                    ) from error
-
-        # Push the modified record.
-        if not self.create(draft_record):
-            # If that didn't work, we need to put the original record back.
-            if self.create(existing_record):
-                # Need to notify that update didn't work.
-                # However, we restored the original record.
-                self.__log.error("Unable to update; original record was restored.")
-                return False
-
-            # Ok, now we have a problem.
-            # We deleted the original record,
-            # are unable to insert the modified record,
-            # AND can't restore the deleted record.
-            self.__log.exception(
-                "Unable to restore deleted record."
-            )  # pragma: no cover
-            raise RuntimeError("Unable to restore deleted record.")  # pragma: no cover
-
-        return True
 
     def version(self) -> str:
         """
