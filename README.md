@@ -50,15 +50,8 @@ Or to retrieve just one record by record number:
 
     df = redcap_interface_object.retrieve(42)
 ### UPDATE
-To update an existing record, instantiate an object of the `REDCapInterface` class and call its `update` method, supplying a `dict` or `pandas.DataFrame` object containing the `study_id` of the record to be modified, along with any updated fields.:
+Use the `create` method--if the `study_id` already exists, the existing record gets updated with whatever new fields you provide.
 
-    from redcap_api import REDCapInterface
-
-
-    redcap_interface_object = REDCapInterface()
-    new_info = {'study_id': str(record_number_to_update),
-                'date_of_last_activity': right_now}
-    redcap_interface_object.update(new_info)
 ### DELETE
 Use the `delete` method of the `REDCapInterface` class, specifying the record number (`study_id`) of the record to be deleted:
 
