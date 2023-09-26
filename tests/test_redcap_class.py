@@ -199,6 +199,15 @@ def test_next_record_number():
     assert isinstance(next_number, int)
 
 
+def test_report():
+    redcap_interface_object = REDCapInterface(isdev=False, timeout_sec=240)
+    retrieved_df = redcap_interface_object.report(report_id=16322)
+    assert isinstance(retrieved_df, pandas.DataFrame)
+    num_elements_returned: int = retrieved_df.shape[0]
+    assert num_elements_returned > 10000
+    assert "contact_1_date_time" in retrieved_df.columns
+
+
 def test_retrieve_all_records():
     """
     Test retrieving ALL records.

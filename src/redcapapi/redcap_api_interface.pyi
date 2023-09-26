@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from typing import Union
 
@@ -10,13 +11,13 @@ class DataRequest(Enum):
 
 class REDCapInterface:
     def __init__(self, isdev: bool = ..., timeout_sec: int = ...) -> None:
-        self.__timeout_sec = None
-        self.__api_uri = None
-        self.__capmc_token = None
+        self.__api_uri: str = None
+        self.__capmc_token: str = None
         self.__discard_empty_fields = None
-        self.__valid = None
-        self.__isdev = None
-        self.__log = None
+        self.__isdev: bool = None
+        self.__log: logging.Logger = None
+        self.__timeout_sec: int = None
+        self.__valid: bool = None
         ...
     def create(self, data_records: Union[dict, pandas.DataFrame]) -> bool: ...
     def delete(self, record_number: int) -> bool: ...
@@ -25,6 +26,7 @@ class REDCapInterface:
         self, except_for: Union[int, list, None] = ..., number_desired: int = ...
     ) -> Union[int, list]: ...
     def next_record_number(self) -> int: ...
+    def report(self, report_id: Union[int, str]) -> pandas.DataFrame: ...
     def retrieve(
         self,
         record_numbers: Union[int, list, None] = ...,

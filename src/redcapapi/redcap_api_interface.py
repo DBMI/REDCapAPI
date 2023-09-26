@@ -515,6 +515,53 @@ class REDCapInterface:
         self.__api_uri = config.get("API", "API_URL")
         self.__capmc_token = config.get("CAPMC", "CAPMC_TOKEN")
 
+    def report(self, report_id: Union[int, str]) -> pandas.DataFrame:
+        """Pulls an existing report from REDCap.
+
+        Parameters
+        ----------
+        report_id : Union[int, str]
+
+        Returns
+        -------
+        dataframe : pandas.DataFrame
+        """
+        report_id_str: str
+
+        if isinstance(report_id, int):
+            report_id_str = str(report_id)
+        elif isinstance(report_id, str):
+            report_id_str = report_id
+        else:
+            raise TypeError("Argument 'report_id' is neither str nor int.")
+
+        df = pandas.DataFrame()
+
+        if not self.__valid:  # pragma: no cover
+            return df
+
+        fields = {
+            "token": self.__capmc_token,
+            "content": "report",
+            "report_id": report_id_str,
+            "format": "json",
+        }
+
+        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
+        response = requests.post(
+            self.__api_uri, data=fields, verify=True, timeout=self.__timeout_sec
+        )
+
+        if (
+            not isinstance(response, requests.Response) or response.status_code != 200
+        ):  # pragma: no cover
+            self.__log.exception("Unable to query REDCap API for report.")
+            raise RuntimeError("Unable to query REDCap API for report.")
+
+        df = pandas.json_normalize(response.json())
+        self.__log.info("Received %d records.", len(df))
+        return df
+
     def retrieve(
         self,
         record_numbers: Union[int, list, None] = None,
