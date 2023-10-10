@@ -1,36 +1,63 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
     hooks:
-      - id: check-docstring-first
-      - id: check-merge-conflict
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
       - id: check-ast
-  - repo: https://github.com/psf/black
-    rev: 22.3.0
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-json
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+        files: "py$"
+      - id: trailing-whitespace
+        files: "py$"
+      - id: mixed-line-ending
+-   repo: local
     hooks:
+      - id: autoflake
+        name: autoflake
+        entry: poetry run autoflake -r --remove-all-unused-imports --remove-unused-variables src/redcapapi
+        files: "py$"
+        language: system
+        types: [python]
+      - id: isort
+        name: isort
+        entry: poetry run isort src/redcapapi
+        files: "py$"
+        language: system
+        types: [python]
       - id: black
         name: black
-        entry: black
+        entry: poetry run black src/redcapapi
+        files: "py$"
         language: system
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: sh ./.github/pre-commit/run_pylint.sh
         types: [python]
+      - id: pyupgrade
+        name: pyupgrade
+        entry: poetry run pyupgrade --py37-plus
         language: system
-      - id: coverage
-        name: coverage
-        entry: sh ./.github/pre-commit/run_coverage.sh
+        types: [python]
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy src/redcapapi
+        require_serial: true
+        files: "py$"
+        language: python
+        additional_dependencies: ["mypy==0.812"]
+        types: [python]
+        pass_filenames: false
+      - id: flake8
+        name: flake8
+        entry: poetry run flake8 src/redcapapi
+        files: "py$"
         language: system
-      - id: documentation
-        name: documentation
-        entry: sh ./.github/pre-commit/run_documentation.sh
+        types: [python]
+      - id: kacl-verify
+        name: kacl-verify
+        entry: poetry run kacl-cli verify
         language: system
-      - id: last_commit_date
-        name: last_commit_date
-        entry: sh ./.github/pre-commit/run_last_commit.sh
-        language: system
+        files: 'CHANGELOG.md'
+        pass_filenames: false
