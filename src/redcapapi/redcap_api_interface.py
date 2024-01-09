@@ -4,6 +4,8 @@ Module: contains class REDCapInterface, providing a wrapper around the REDCap AP
 import configparser
 import json
 import math
+import os.path
+import platform
 from enum import Enum
 from typing import List, Union
 
@@ -507,14 +509,38 @@ class REDCapInterface:
             self.__log.exception("Unable to parse next record number.")
             raise RuntimeError("Unable to parse next record number.") from error
 
+    def __path_to_secrets(self) -> str:
+        """Returns machine-dependent path to secrets files.
+
+        Returns
+        -------
+        secrets_dir : str
+        """
+        secrets_dir: str = r"C:\.ssh\REDCap"
+        machine_name: str = platform.node()
+
+        if machine_name == "medicinedb5p01":
+            secrets_dir = r"F:\RedCap\secrets"
+
+        return secrets_dir
+
     def __read_config_file(self) -> None:
-        config = configparser.ConfigParser()
+        just_the_filename: str
+        secrets_dir = self.__path_to_secrets()
 
         if self.__isdev:
-            config.read(r"F:\RedCap\secrets\config-dev.key")
+            just_the_filename = "config-dev.key"
         else:
-            config.read(r"F:\RedCap\secrets\config.key")
+            just_the_filename = "config.key"
 
+        full_filename: str = os.path.join(secrets_dir, just_the_filename)
+
+        if not os.path.isfile(full_filename):
+            self.__log.error('Unable to find key file "' + full_filename + '".')
+            raise RuntimeError("Unable to find key file.")
+
+        config = configparser.ConfigParser()
+        config.read(full_filename)
         self.__api_uri = config.get("API", "API_URL")
         self.__capmc_token = config.get("CAPMC", "CAPMC_TOKEN")
 
