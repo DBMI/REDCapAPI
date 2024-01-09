@@ -42,6 +42,7 @@ class REDCapInterface:
         self, record_numbers: Union[list, None], expanded_record: bool
     ) -> dict:
         pass
+    def __path_to_secrets(self) -> str: ...
     def __update_one_record(
         self, new_data_record: dict, existing_record: pandas.DataFrame
     ) -> bool:
