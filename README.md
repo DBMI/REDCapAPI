@@ -3,7 +3,7 @@
 ![Coverage Status](./.github/badges/coverage-badge.svg?dummy=8484744)
 ![Last Commit Date](./.github/badges/last-commit-badge.svg?dummy=8484744)
 
-[GitHub Pages site](https://dbmi.github.io/REDCap_API_Calls/index.html)
+[GitHub Pages site](https://dbmi.github.io/REDCapAPI/index.html)
 # How to use `REDCapInterface` class to connect with REDCap API
 
 ## Obtaining a token
