@@ -257,6 +257,7 @@ class REDCapInterface:
             pull_dict["fields[27]"] = "initial_outreach_means"
             pull_dict["fields[28]"] = "contact_1_date_time"
             pull_dict["fields[29]"] = "preferred_language"
+            pull_dict["fields[30]"] = "physician"
         elif data_request == DataRequest.Velos:
             pull_dict["fields[0]"] = "study_id"
             pull_dict["fields[1]"] = "mrn"
