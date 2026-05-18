@@ -59,7 +59,7 @@ class REDCapInterface:
 
         Assumes using production data, but can be created with isdev=True to
         point to the development database.
-        Gets database token from "F:\\RedCap\\secrets\\config.key"
+        Gets database token from "F:\dbmi.data\redcap_refresh\config.key"
 
         Parameters
         ----------
@@ -531,7 +531,7 @@ class REDCapInterface:
         machine_name: str = platform.node()
 
         if machine_name == "medicinedb5p01":
-            secrets_dir = r"F:\RedCap\secrets"
+            secrets_dir = r"F:\dbmi.data\redcap_refresh"
 
         return secrets_dir
 
