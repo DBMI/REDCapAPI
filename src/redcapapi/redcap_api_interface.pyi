@@ -19,7 +19,10 @@ class REDCapInterface:
         self.__timeout_sec: int = None
         self.__valid: bool = None
         ...
-    def create(self, data_records: Union[dict, pandas.DataFrame]) -> bool: ...
+
+    def create(
+        self, data_records: Union[dict, pandas.DataFrame], overwrite: bool = False
+    ) -> bool: ...
     def delete(self, record_number: int) -> bool: ...
     def exists(self, record_number: int) -> bool: ...
     def last_record_number(
@@ -36,12 +39,15 @@ class REDCapInterface:
     def version(self) -> str: ...
     def __read_config_file(self) -> None:
         pass
+
     def __known_test_record_present(self) -> bool:
         pass
+
     def __build_data_pull(
         self, record_numbers: Union[list, None], expanded_record: bool
     ) -> dict:
         pass
+
     def __path_to_secrets(self) -> str: ...
     def __update_one_record(
         self, new_data_record: dict, existing_record: pandas.DataFrame

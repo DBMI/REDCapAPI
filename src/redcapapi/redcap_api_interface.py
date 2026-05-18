@@ -1,6 +1,7 @@
 """
 Module: contains class REDCapInterface, providing a wrapper around the REDCap API.
 """
+
 import configparser
 import json
 import math
@@ -101,7 +102,9 @@ class REDCapInterface:
         # Lets all methods know that we're talking to the correct database.
         self.__valid = True
 
-    def create(self, data_records: Union[dict, pandas.DataFrame]) -> bool:
+    def create(
+        self, data_records: Union[dict, pandas.DataFrame], overwrite: bool = False
+    ) -> bool:
         """
         Insert new records into database.
 
@@ -109,6 +112,8 @@ class REDCapInterface:
         ----------
         data_records : dict, dataframe
             Must contain the new study_id desired.
+        overwrite : bool
+            Overwrite data with nulls? Default: false
 
         Return
         ------
@@ -159,6 +164,10 @@ class REDCapInterface:
             "type": "flat",
             "data": data,
         }
+
+        # Set overwrite behavior.
+        if overwrite:
+            fields["overwriteBehavior"] = "overwrite"
 
         assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
@@ -248,6 +257,7 @@ class REDCapInterface:
             pull_dict["fields[27]"] = "initial_outreach_means"
             pull_dict["fields[28]"] = "contact_1_date_time"
             pull_dict["fields[29]"] = "preferred_language"
+            pull_dict["fields[30]"] = "physician"
         elif data_request == DataRequest.Velos:
             pull_dict["fields[0]"] = "study_id"
             pull_dict["fields[1]"] = "mrn"
