@@ -212,7 +212,7 @@ def test_retrieve_all_records():
     """
     Test retrieving ALL records.
     """
-    redcap_interface_object = REDCapInterface(isdev=True, timeout_sec=240)
+    redcap_interface_object = REDCapInterface(isdev=False, timeout_sec=240)
     retrieved_df = redcap_interface_object.retrieve()
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]

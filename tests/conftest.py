@@ -11,7 +11,7 @@ from faker import Faker
 
 @pytest.fixture(name="api_version_string")
 def fixture_api_version_string() -> str:
-    return "13.1.29"
+    return "14.4.44"
 
 
 # https://stackoverflow.com/a/33879151/20241849
