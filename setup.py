@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="redcapapi",
-    version="1.6.2",
+    version="1.6.3",
     package_dir={"": "src"},
     packages=["redcapapi"],
     url="https://github.com/DBMI/REDCapAPI",
@@ -11,10 +11,10 @@ setup(
     author_email="kjdelaney@ucsd.edu",
     description="A Python wrapper around the REDCap API.",
     classifiers=[
-        "Programming Language :: Python :: 3.71",
+        "Programming Language :: Python :: 3.12",
     ],
     install_requires=[
-        "pandas >= 1.3.5",
-        "requests >= 2.27.1",
+        "pandas >= 2.2.0",
+        "requests >= 2.31.0",
     ],
 )
