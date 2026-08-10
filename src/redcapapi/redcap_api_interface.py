@@ -12,7 +12,7 @@ from typing import List, Union
 
 import pandas  # type: ignore[import]
 import requests
-from redcaputilities.logging import setup_logging
+from redcaputilities.my_logging import setup_logging
 
 
 class DataRequest(Enum):
