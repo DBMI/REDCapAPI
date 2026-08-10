@@ -6,7 +6,6 @@ import configparser
 import json
 import math
 import os.path
-import platform
 from enum import Enum
 from typing import List, Union
 
@@ -520,38 +519,26 @@ class REDCapInterface:
             self.__log.exception("Unable to parse next record number.")
             raise RuntimeError("Unable to parse next record number.") from error
 
-    def __path_to_secrets(self) -> str:
-        """Returns machine-dependent path to secrets files.
-
-        Returns
-        -------
-        secrets_dir : str
-        """
-        secrets_dir: str = r"C:\.ssh\REDCap"
-        machine_name: str = platform.node()
-
-        if machine_name == "medicinedb5p01":
-            secrets_dir = r"F:\dbmi.data\redcap_refresh"
-
-        return secrets_dir
-
     def __read_config_file(self) -> None:
-        just_the_filename: str
-        secrets_dir = self.__path_to_secrets()
+        env_var_name: str
 
         if self.__isdev:
-            just_the_filename = "config-dev.key"
+            env_var_name = "REDCAP_DEV_KEY"
         else:
-            just_the_filename = "config.key"
+            env_var_name = "REDCAP_KEY"
 
-        full_filename: str = os.path.join(secrets_dir, just_the_filename)
+        config_str_raw: str = os.getenv(env_var_name)
 
-        if not os.path.isfile(full_filename):
-            self.__log.error('Unable to find key file "' + full_filename + '".')
-            raise RuntimeError("Unable to find key file.")
+        if not config_str_raw:
+            self.__log.exception('Unable to find environment variable "' + env_var_name + '".')
+            raise RuntimeError('Unable to find environment variable "' + env_var_name + '".')
+
+        # We saved a small config file WITHOUT newlines
+        # --the new ines need to be reconstituted here.
+        config_str: str = config_str_raw.replace('\\n', '\n')
 
         config = configparser.ConfigParser()
-        config.read(full_filename)
+        config.read_string(config_str)
         self.__api_uri = config.get("API", "API_URL")
         self.__capmc_token = config.get("CAPMC", "CAPMC_TOKEN")
 
