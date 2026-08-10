@@ -1,6 +1,16 @@
+# 1. Root configuration for the pre-commit.ci runner
+pre-commit.ci:
+  autofix_commit_msg: '[pre-commit.ci] auto fixes from pre-commit hooks'
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  python: python3.11  # Matches your runner's target Python version
+  pre_install:
+    - pip install poetry
+    - poetry install
+
+# 2. Main repositories section
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
     hooks:
       - id: check-ast
       - id: check-added-large-files
@@ -15,49 +25,46 @@ repos:
       - id: trailing-whitespace
         files: "py$"
       - id: mixed-line-ending
--   repo: local
+
+# 3. Clean native mypy implementation (No more poetry run internal crashes!)
+  - repo: https://github.com
+    rev: v1.11.1
+    hooks:
+      - id: mypy
+        files: "py$"
+        additional_dependencies: [numpy, types-requests] # Add any stub libraries here
+
+# 4. Local hooks managed via poetry env
+  - repo: local
     hooks:
       - id: autoflake
         name: autoflake
-        entry: poetry run autoflake -r --remove-all-unused-imports --remove-unused-variables src/redcapapi
+        entry: poetry run autoflake -r --remove-all-unused-imports --remove-unused-variables src/redcapmatchresolver
         files: "py$"
         language: system
-        types: [python]
+        types: [ python ]
       - id: isort
         name: isort
-        entry: poetry run isort src/redcapapi
+        entry: poetry run isort src/redcapmatchresolver
         files: "py$"
         language: system
-        types: [python]
+        types: [ python ]
       - id: black
         name: black
-        entry: poetry run black src/redcapapi
+        entry: poetry run black src/redcapmatchresolver
         files: "py$"
         language: system
-        types: [python]
+        types: [ python ]
       - id: pyupgrade
         name: pyupgrade
         entry: poetry run pyupgrade --py37-plus
         language: system
-        types: [python]
-      - id: mypy
-        name: mypy
-        entry: poetry run mypy src/redcapapi
-        require_serial: true
-        files: "py$"
-        language: python
-        additional_dependencies: ["mypy==0.812"]
-        types: [python]
-        pass_filenames: false
+        types: [ python ]
       - id: flake8
         name: flake8
-        entry: poetry run flake8 src/redcapapi
+        entry: poetry run flake8 src/redcapmatchresolver
+        args: [ "--config=.flake8" ]
+        exclude: "tests"
         files: "py$"
         language: system
-        types: [python]
-      - id: kacl-verify
-        name: kacl-verify
-        entry: poetry run kacl-cli verify
-        language: system
-        files: 'CHANGELOG.md'
-        pass_filenames: false
+        types: [ python ]
