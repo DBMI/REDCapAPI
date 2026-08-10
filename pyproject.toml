@@ -1,5 +1,30 @@
+[project]
+name = "redcapapi"
+version = "1.6.3"
+description = "A Python wrapper around the REDCap API."
+license = {file = 'LICENSE'}
+readme = "README.md"
+authors = [
+    {name = "Kevin J. Delaney", email = "<kjdelaney@health.ucsd.edu>"},
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+
+[project.urls]
+documentation = "https://github.com/DBMI/REDCapAPI"
+homepage = "https://github.com/DBMI/REDCapAPI"
+repository = "https://github.com/DBMI/REDCapAPI"
+
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
@@ -30,18 +55,17 @@ ignore_missing_imports = true
 disable_error_code = ["call-arg", "call-overload", "import", "var-annotated"]
 
 [tool.poetry]
-name = "redcapapi"
-version = "1.6.3"
-description = "A Python wrapper around the REDCap API."
-authors = ["Kevin J. Delaney <kjdelaney@ucsd.edu>"]
-readme = "README.md"
+package-mode = false
+packages = [
+    { include = "redcapmatchresolver", from = "src" }
+]
 
 [tool.poetry.dependencies]
-python = "^3.12"
-pandas = "2.2.0"
+python = ">=3.11, <4.0"
+pandas = ">=2.2.0"
 redcaputilities = {git = "https://github.com/DBMI/REDCapUtilities.git"}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 anybadge = "*"
 autoflake = "*"
 black = "*"
@@ -60,7 +84,7 @@ mkdocs = "*"
 mkdocstrings = "*"
 mkdocs-material = "*"
 mypy = "*"
-pandas = "2.2.0"
+pandas = "*"
 pep8-naming = "*"
 pre-commit = "*"
 pymdown-extensions = "*"
@@ -75,7 +99,12 @@ sphinx = "*"
 sphinx_markdown_builder = "*"
 tryceratops = "*"
 typing = "3.7.4.3"
+typing-extensions = "^4.16.0"
 wheel = "*"
+
+[tool.poetry.group.test.dependencies]
+faker = "^15.3.4"
+openpyxl = "^3.1.5"
 
 [tool.pylint.format]
 max-line-length = "88"
