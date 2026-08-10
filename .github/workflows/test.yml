@@ -36,7 +36,7 @@ jobs:
       - uses: ./.github/actions/python-poetry-env
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Run test suite
         env:
           REDCAP_DEV_KEY: ${{ secrets.REDCAP_DEV_KEY }}
-      - name: Run test suite
         run: poetry run pytest
