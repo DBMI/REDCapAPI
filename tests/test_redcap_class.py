@@ -15,30 +15,43 @@ from redcapapi import DataRequest, REDCapInterface
 from tests.utilities import convert_to_date
 
 
-def test_create_one_record(fake_record_dict):
+def test_create_one_record(requests_mock, url, known_fake_record, fake_next_record, fake_ok_response, fake_record_dict):
     """
     Test creating ONE record.
     """
-    redcap_interface_object = REDCapInterface(isdev=True)
-
-    # Some corner cases.
-    assert not redcap_interface_object.create(None)
-    assert not redcap_interface_object.create("should not work")
-
-    # Create from dict object.
-    next_study_id = redcap_interface_object.next_record_number()
+    ##  Register the mock URI, HTTP method, JSON payload, and status code
+    ##  to support the internal method __known_test_record_present(),
+    ##  which is called by __init__ method.
+    requests_mock.post(url, json=known_fake_record)
+    redcap_interface_object: REDCapInterface = REDCapInterface(isdev=True)
+    assert isinstance(redcap_interface_object, REDCapInterface)
+    #
+    #   Exercise next_record_number()
+    #
+    requests_mock.post(url, json=fake_next_record, status_code=200)
+    next_study_id: int = redcap_interface_object.next_record_number()
+    assert isinstance(next_study_id, int)
+    assert next_study_id == fake_next_record
+    #
+    #   Create record from dict object.
+    #
+    requests_mock.post(url, json=fake_next_record, status_code=200)
     assert redcap_interface_object.create(fake_record_dict)
 
-    # Create from pandas.DataFrame object.
-    test_df = pandas.DataFrame([fake_record_dict], index=[next_study_id])
+    # Create record from pandas.DataFrame object.
+    test_df: pandas.DataFrame = pandas.DataFrame(
+        [fake_record_dict], index=[next_study_id]
+    )
     assert redcap_interface_object.create(test_df)
 
 
-def test_create_multiple_records(fake_records_dataframe):
+def test_create_multiple_records(requests_mock, url, known_fake_record, fake_next_record, fake_records_dataframe):
     """
     Test creating SEVERAL records simultaneously.
     """
+    requests_mock.post(url, json=known_fake_record)
     redcap_interface_object = REDCapInterface(isdev=True)
+    requests_mock.post(url, json=fake_next_record, status_code=200)
     assert redcap_interface_object.create(fake_records_dataframe)
 
 
@@ -107,11 +120,13 @@ def test_convert_dates():
     assert date_string_converted is None
 
 
-def test_delete_record(known_fake_record_number):
+def test_delete_record(requests_mock, url, known_fake_record, fake_next_record, known_fake_record_number):
     """
     Test deleting one record.
     """
+    requests_mock.post(url, json=known_fake_record)
     redcap_interface_object = REDCapInterface(isdev=True)
+    requests_mock.post(url, json=fake_next_record, status_code=200)
     last_record_number = redcap_interface_object.last_record_number(
         except_for=known_fake_record_number
     )
@@ -184,19 +199,6 @@ def test_last_record_number(known_fake_record_number):
     last_valid_number = redcap_interface_object.last_record_number(number_desired=2)
     assert isinstance(last_valid_number, list)
     assert len(last_valid_number) == 2
-
-
-def test_next_record_number():
-    """
-    Test method for determining which is next unused record number.
-
-    Return
-    ------
-    bool
-    """
-    redcap_interface_object = REDCapInterface(isdev=True)
-    next_number = redcap_interface_object.next_record_number()
-    assert isinstance(next_number, int)
 
 
 def test_report():

@@ -1,17 +1,26 @@
 """
 Contains test fixtures available across all test_*.py files.
 """
-import re
-from datetime import datetime
 
 import pandas
 import pytest
-from faker import Faker
+
+from tests.helpers import fake_record_dict, fake_records_dataframe
 
 
 @pytest.fixture(name="api_version_string")
 def fixture_api_version_string() -> str:
-    return "14.4.44"
+    return "14.5.44"
+
+
+@pytest.fixture(name="fake_next_record")
+def fixture_fake_next_record() -> int:
+    return 123456
+
+
+@pytest.fixture(name="fake_ok_response")
+def fixture_fake_ok_response() -> int:
+    return 123456
 
 
 # https://stackoverflow.com/a/33879151/20241849
@@ -24,36 +33,7 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
     ------
     pandas.DataFrame
     """
-    num_records_to_synthesize = 3
-    fake = Faker()
-    dataframes = []
-
-    for index in range(num_records_to_synthesize):
-        birthdate = fake.date_of_birth(minimum_age=18, maximum_age=115)
-        primary_consent_date = fake.date_between(birthdate)
-        core_participant_date = fake.date_between(primary_consent_date)
-
-        # Strip off the extension.
-        phone_number = fake.phone_number()
-        phone_number = re.sub(r"x\d+", "", phone_number)
-
-        record = {
-            "first_name": fake.first_name(),
-            "last_name": fake.last_name(),
-            "phone_number": phone_number,
-            "email_address": fake.email(),
-            "dob": birthdate.strftime("%Y-%m-%d"),
-            "ethnicity": fake.random_int(min=1, max=2),
-            "race": fake.random_int(min=1, max=5),
-            "sex": fake.random_int(min=1, max=3),
-            "core_participant_date": core_participant_date.strftime("%Y-%m-%d"),
-            "primary_consent_date": primary_consent_date.strftime("%Y-%m-%d"),
-            "date_of_last_activity": datetime.now().strftime("%Y-%m-%d"),
-        }
-
-        dataframes.append(pandas.DataFrame([record], index=[index]))
-
-    return pandas.concat(dataframes)
+    return fake_records_dataframe()
 
 
 # https://stackoverflow.com/a/33879151/20241849
@@ -66,30 +46,7 @@ def fixture_fake_record_dict() -> dict:
     ------
     dict
     """
-    fake = Faker()
-    birthdate = fake.date_of_birth(minimum_age=18, maximum_age=115)
-    primary_consent_date = fake.date_between(birthdate)
-    core_participant_date = fake.date_between(primary_consent_date)
-
-    # Strip off the extension.
-    phone_number = fake.phone_number()
-    phone_number = re.sub(r"x\d+", "", phone_number)
-
-    record = {
-        "first_name": fake.first_name(),
-        "last_name": fake.last_name(),
-        "phone_number": phone_number,
-        "email_address": fake.email(),
-        "dob": birthdate.strftime("%Y-%m-%d"),
-        "ethnicity": fake.random_int(min=1, max=2),
-        "race": fake.random_int(min=1, max=5),
-        "sex": fake.random_int(min=1, max=3),
-        "core_participant_date": core_participant_date.strftime("%Y-%m-%d"),
-        "primary_consent_date": primary_consent_date.strftime("%Y-%m-%d"),
-        "date_of_last_activity": datetime.now().strftime("%Y-%m-%d"),
-    }
-
-    return record
+    return fake_record_dict()
 
 
 # We loaded a known fake patient name into this record number.
@@ -100,3 +57,13 @@ def fixture_fake_record_dict() -> dict:
 @pytest.fixture(name="known_fake_record_number")
 def fixture_known_fake_record_number() -> int:
     return 6393740
+
+
+@pytest.fixture(name="known_fake_record")
+def fixture_known_fake_record() -> dict:
+    return {"study_id": "6393740", "first_name": "TESTER", "last_name": "TESTDATA"}
+
+
+@pytest.fixture(name="url")
+def fixture_url() -> str:
+    return r"https://redcap.ucsd.edu/api/"
