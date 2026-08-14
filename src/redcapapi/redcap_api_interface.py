@@ -52,7 +52,9 @@ class REDCapInterface:
         Returns the version number of the REDCap API in use.
     """
 
-    def __init__(self, isdev: bool = False, timeout_sec: int = 30):
+    def __init__(
+        self, isdev: bool = False, timeout_sec: int = 30, test_mode: bool = False
+    ):
         """
         Create instance of `REDCapInterface` class.
 
@@ -68,6 +70,8 @@ class REDCapInterface:
         timeout_sec : int, optional
             How long to wait (in seconds) for reponse (default: 10 sec)
 
+        test_mode: bool, optional
+            If True, skips reading the config file because REDCap database keys not required in CI/CD tests.
         Return
         -------
         none; Instantiates object
@@ -85,8 +89,12 @@ class REDCapInterface:
         self.__api_uri: Union[str, None] = None
         self.__capmc_token: Union[str, None] = None
         self.__isdev = isdev
-        self.__read_config_file()
         self.__timeout_sec = timeout_sec
+
+        if test_mode:
+            self.__api_uri = r"https://redcap.ucsd.edu/api/"
+        else:
+            self.__read_config_file()
 
         if self.__isdev and not self.__known_test_record_present():  # pragma: no cover
             self.__log.exception(
@@ -156,7 +164,7 @@ class REDCapInterface:
         # JSONify
         data = json.dumps(data_records_list)
 
-        fields = {
+        fields: dict = {
             "token": self.__capmc_token,
             "content": "record",
             "format": "json",
@@ -168,7 +176,6 @@ class REDCapInterface:
         if overwrite:
             fields["overwriteBehavior"] = "overwrite"
 
-        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=fields, timeout=self.__timeout_sec
         )
@@ -306,14 +313,13 @@ class REDCapInterface:
         if not isinstance(record_number, int):
             return False
 
-        fields = {
+        fields: dict = {
             "token": self.__capmc_token,
             "action": "delete",
             "content": "record",
             "records[0]": record_number,
         }
 
-        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=fields, timeout=self.__timeout_sec
         )
@@ -379,7 +385,6 @@ class REDCapInterface:
             self.__log.exception("Input 'record_number' is not an int.")
             raise TypeError("Input 'record_number' is not an int.")
 
-        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
         )
@@ -499,12 +504,11 @@ class REDCapInterface:
         >>> redcap_interface_object = REDCapInterface()
         >>> new_record_number = redcap_interface_object.next_record_number()
         """
-        fields = {
+        fields: dict = {
             "token": self.__capmc_token,
             "content": "generateNextRecordName",
         }
 
-        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=fields, timeout=self.__timeout_sec
         )
@@ -530,12 +534,16 @@ class REDCapInterface:
         config_str_raw: str = os.getenv(env_var_name)
 
         if not config_str_raw:
-            self.__log.exception('Unable to find environment variable "' + env_var_name + '".')
-            raise RuntimeError('Unable to find environment variable "' + env_var_name + '".')
+            self.__log.exception(
+                'Unable to find environment variable "' + env_var_name + '".'
+            )
+            raise RuntimeError(
+                'Unable to find environment variable "' + env_var_name + '".'
+            )
 
         # We saved a small config file WITHOUT newlines
         # --the new ines need to be reconstituted here.
-        config_str: str = config_str_raw.replace('\\n', '\n')
+        config_str: str = config_str_raw.replace("\\n", "\n")
 
         config = configparser.ConfigParser()
         config.read_string(config_str)
@@ -562,19 +570,18 @@ class REDCapInterface:
         else:
             raise TypeError("Argument 'report_id' is neither str nor int.")
 
-        df = pandas.DataFrame()
+        df: pandas.DataFrame = pandas.DataFrame()
 
         if not self.__valid:  # pragma: no cover
             return df
 
-        fields = {
+        fields: dict = {
             "token": self.__capmc_token,
             "content": "report",
             "report_id": report_id_str,
             "format": "json",
         }
 
-        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         response = requests.post(
             self.__api_uri, data=fields, verify=True, timeout=self.__timeout_sec
         )
@@ -636,7 +643,6 @@ class REDCapInterface:
                 return df
 
         data_pull = self.__build_data_pull(record_numbers, data_request=data_request)
-        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
         self.__log.info("Requesting REDCap data.")
         response = requests.post(
             self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
@@ -674,9 +680,7 @@ class REDCapInterface:
         >>> redcap_interface_object = REDCapInterface()
         >>> print(f"Version = {redcap_interface_object.version()}")
         """
-        fields = {"token": self.__capmc_token, "content": "version"}
-
-        assert self.__api_uri is not None, "Unable to read 'API_URL.'"
+        fields: dict = {"token": self.__capmc_token, "content": "version"}
         response = requests.post(
             self.__api_uri, data=fields, verify=True, timeout=self.__timeout_sec
         )

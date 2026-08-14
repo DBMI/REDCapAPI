@@ -13,9 +13,31 @@ def fixture_api_version_string() -> str:
     return "14.5.44"
 
 
+@pytest.fixture(name="fake_missing_record")
+def fixture_fake_missing_record() -> dict:
+    return {"study_id": -1}
+
+
 @pytest.fixture(name="fake_next_record")
 def fixture_fake_next_record() -> int:
     return 123456
+
+
+@pytest.fixture(name="fake_next_record_pair")
+def fixture_fake_next_record_pair() -> list[dict]:
+    return [
+        {"json": 123456, "status_code": 200},
+        {"json": {"study_id": 123455, "dob": "1776-07-04"}, "status_code": 200},
+    ]
+
+
+@pytest.fixture(name="fake_next_record_triple")
+def fixture_fake_next_record_triple() -> list[dict]:
+    return [
+        {"json": 123456, "status_code": 200},
+        {"json": {"study_id": 123455}, "status_code": 200},
+        {"json": {"study_id": 123454}, "status_code": 200},
+    ]
 
 
 @pytest.fixture(name="fake_ok_response")
