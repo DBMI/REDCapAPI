@@ -10,7 +10,9 @@ class DataRequest(Enum):
     Velos = ...
 
 class REDCapInterface:
-    def __init__(self, isdev: bool = ..., timeout_sec: int = ...) -> None:
+    def __init__(
+        self, isdev: bool = ..., timeout_sec: int = ..., test_mode: bool = ...
+    ) -> None:
         self.__api_uri: str = None
         self.__capmc_token: str = None
         self.__discard_empty_fields = None
@@ -39,7 +41,9 @@ class REDCapInterface:
     def version(self) -> str: ...
     def __known_test_record_present(self) -> bool: ...
     def __build_data_pull(
-        self, record_numbers: Union[list, None], data_request: DataRequest = DataRequest.Standard
+        self,
+        record_numbers: Union[list, None],
+        data_request: DataRequest = DataRequest.Standard,
     ) -> dict: ...
     def __update_one_record(
         self, new_data_record: dict, existing_record: pandas.DataFrame

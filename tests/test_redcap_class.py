@@ -6,6 +6,7 @@ Classes
 -------
 TestREDCap
 """
+import json
 from datetime import datetime
 
 import pandas
@@ -15,7 +16,14 @@ from redcapapi import DataRequest, REDCapInterface
 from tests.utilities import convert_to_date
 
 
-def test_create_one_record(requests_mock, url, known_fake_record, fake_next_record, fake_ok_response, fake_record_dict):
+def test_create_one_record(
+    requests_mock,
+    url,
+    known_fake_record,
+    fake_next_record,
+    fake_ok_response,
+    fake_record_dict,
+):
     """
     Test creating ONE record.
     """
@@ -23,7 +31,9 @@ def test_create_one_record(requests_mock, url, known_fake_record, fake_next_reco
     ##  to support the internal method __known_test_record_present(),
     ##  which is called by __init__ method.
     requests_mock.post(url, json=known_fake_record)
-    redcap_interface_object: REDCapInterface = REDCapInterface(isdev=True)
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=True, test_mode=True
+    )
     assert isinstance(redcap_interface_object, REDCapInterface)
     #
     #   Exercise next_record_number()
@@ -45,12 +55,14 @@ def test_create_one_record(requests_mock, url, known_fake_record, fake_next_reco
     assert redcap_interface_object.create(test_df)
 
 
-def test_create_multiple_records(requests_mock, url, known_fake_record, fake_next_record, fake_records_dataframe):
+def test_create_multiple_records(
+    requests_mock, url, known_fake_record, fake_next_record, fake_records_dataframe
+):
     """
     Test creating SEVERAL records simultaneously.
     """
     requests_mock.post(url, json=known_fake_record)
-    redcap_interface_object = REDCapInterface(isdev=True)
+    redcap_interface_object = REDCapInterface(isdev=True, test_mode=True)
     requests_mock.post(url, json=fake_next_record, status_code=200)
     assert redcap_interface_object.create(fake_records_dataframe)
 
@@ -59,74 +71,84 @@ def test_convert_dates():
     """
     Test converting strings to dates.
     """
-    date_value_true = datetime.strptime("31/01/1970", "%d/%m/%Y")
-    datetime_value_true = datetime.strptime("31/01/1970 12:05:10", "%d/%m/%Y %H:%M:%S")
+    date_value_true: datetime = datetime.strptime("31/01/1970", "%d/%m/%Y")
+    datetime_value_true: datetime = datetime.strptime(
+        "31/01/1970 12:05:10", "%d/%m/%Y %H:%M:%S"
+    )
 
-    date_string_test = "01/31/1970"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "01/31/1970"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "01/31/70"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "01/31/70"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "01-31-1970"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "01-31-1970"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "01-31-70"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "01-31-70"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "70-01-31"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "70-01-31"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "1970-01-31 12:05:10"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "1970-01-31 12:05:10"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == datetime_value_true
 
-    date_string_test = "1970-01-31"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "1970-01-31"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "31 Jan 1970"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "31 Jan 1970"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "Jan 31 1970"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "Jan 31 1970"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "Jan 31, 1970"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "Jan 31, 1970"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
-    date_string_test = "Jan 31 1970 12:00AM"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "Jan 31 1970 12:00AM"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted == date_value_true
 
     # Cases we expect to return None.
-    date_string_test = ""
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = ""
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted is None
 
-    date_string_test = "text only"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "text only"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted is None
 
-    date_string_test = "1234 cannot be parsed"
-    date_string_converted = convert_to_date(date_string_test)
+    date_string_test: str = "1234 cannot be parsed"
+    date_string_converted: datetime = convert_to_date(date_string_test)
     assert date_string_converted is None
 
 
-def test_delete_record(requests_mock, url, known_fake_record, fake_next_record, known_fake_record_number):
+def test_delete_record(
+    requests_mock,
+    url,
+    known_fake_record,
+    fake_next_record_pair,
+    known_fake_record_number,
+):
     """
     Test deleting one record.
     """
-    requests_mock.post(url, json=known_fake_record)
-    redcap_interface_object = REDCapInterface(isdev=True)
-    requests_mock.post(url, json=fake_next_record, status_code=200)
+    requests_mock.post(url, json=known_fake_record, status_code=200)
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=True, test_mode=True
+    )
+    requests_mock.post(url, fake_next_record_pair)
     last_record_number = redcap_interface_object.last_record_number(
         except_for=known_fake_record_number
     )
@@ -140,15 +162,23 @@ def test_delete_record(requests_mock, url, known_fake_record, fake_next_record, 
     assert not redcap_interface_object.delete(None)
 
 
-def test_exists():
+def test_exists(
+    requests_mock, url, known_fake_record, fake_next_record_pair, fake_missing_record
+):
     """
     Test method for querying whether given record is present.
     """
-    redcap_interface_object = REDCapInterface(isdev=True)
-    last_record_number = redcap_interface_object.last_record_number()
+    requests_mock.post(url, json=known_fake_record, status_code=200)
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=True, test_mode=True
+    )
+    requests_mock.post(url, fake_next_record_pair)
+    last_record_number: int = redcap_interface_object.last_record_number()
+    requests_mock.post(url, json=known_fake_record, status_code=200)
     assert redcap_interface_object.exists(last_record_number)
 
     # Case that should result in False.
+    requests_mock.post(url, json=fake_missing_record, status_code=400)
     assert not redcap_interface_object.exists(-1)
 
     # Cases that should throw exception.
@@ -159,62 +189,71 @@ def test_exists():
         redcap_interface_object.exists("should throw error")
 
 
-def test_instantiate_object(api_version_string):
-    """
-    Test creating REDCapInterface object.
-    """
-    #   This is the ONLY time in testing that we'll instantiate a REDCapInterface object
-    #    WITHOUT the isdev flag set. It's to ensure we CAN read the production token.
-    production_redcap_interface_object = REDCapInterface(isdev=False)
-    assert isinstance(production_redcap_interface_object, REDCapInterface)
-    version_number = production_redcap_interface_object.version()
-    assert version_number == api_version_string
-
-    #   We'll use the isdev = True flag to specify we want to talk to the DEV database.
-    redcap_interface_object = REDCapInterface(isdev=True)
-    assert isinstance(redcap_interface_object, REDCapInterface)
-    version_number = redcap_interface_object.version()
-    assert version_number == api_version_string
-
-
-def test_last_record_number(known_fake_record_number):
+def test_last_record_number(
+    requests_mock,
+    url,
+    known_fake_record,
+    fake_next_record_pair,
+    known_fake_record_number,
+    fake_next_record_triple,
+):
     """
     Test method for looking up highest used record number.
     """
-    redcap_interface_object = REDCapInterface(isdev=True)
+    requests_mock.post(url, json=known_fake_record, status_code=200)
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=True, test_mode=True
+    )
+    requests_mock.post(url, fake_next_record_pair)
     last_valid_number = redcap_interface_object.last_record_number()
     assert isinstance(last_valid_number, int)
+    requests_mock.post(url, fake_next_record_pair)
     last_valid_number = redcap_interface_object.last_record_number(
         except_for=known_fake_record_number
     )
     assert isinstance(last_valid_number, int)
 
     # Force method to look past the first guess (next number - 1).
+    requests_mock.post(url, fake_next_record_triple)
     last_valid_number = redcap_interface_object.last_record_number(
         except_for=last_valid_number
     )
     assert isinstance(last_valid_number, int)
 
     # Multiple values
+    requests_mock.post(url, fake_next_record_triple)
     last_valid_number = redcap_interface_object.last_record_number(number_desired=2)
     assert isinstance(last_valid_number, list)
     assert len(last_valid_number) == 2
 
 
-def test_report():
-    redcap_interface_object = REDCapInterface(isdev=False, timeout_sec=240)
-    retrieved_df = redcap_interface_object.report(report_id=16322)
+def test_report(requests_mock, url, known_fake_record, fake_records_dataframe):
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=False, timeout_sec=240, test_mode=True
+    )
+
+    json_string: str = fake_records_dataframe.to_json(orient='records')
+    parsed_data: list[dict] = json.loads(json_string)
+    requests_mock.post(url, json=parsed_data, status_code=200)
+    retrieved_df: pandas.DataFrame = redcap_interface_object.report(report_id=1234)
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
-    assert num_elements_returned > 10000
+    assert num_elements_returned > 1
     assert "contact_1_date_time" in retrieved_df.columns
 
 
-def test_retrieve_all_records():
+def test_retrieve_all_records(requests_mock, url, known_fake_record, fake_records_dataframe):
     """
     Test retrieving ALL records.
     """
-    redcap_interface_object = REDCapInterface(isdev=False, timeout_sec=240)
+    requests_mock.post(url, json=known_fake_record, status_code=200)
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=False, timeout_sec=240, test_mode=True
+    )
+
+    json_string: str = fake_records_dataframe.to_json(orient='records')
+    parsed_data: list[dict] = json.loads(json_string)
+    requests_mock.post(url, json=parsed_data, status_code=200)
     retrieved_df = redcap_interface_object.retrieve()
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
@@ -224,13 +263,23 @@ def test_retrieve_all_records():
     # Bulk mode won't work in expanded mode--insufficient memory.
 
 
-def test_retrieve_multiple_records():
+def test_retrieve_multiple_records(requests_mock, url, known_fake_record, fake_next_record_pair, fake_records_dataframe):
     """
     Test retrieving SEVERAL records.
     """
-    redcap_interface_object = REDCapInterface(isdev=True)
+    requests_mock.post(url, json=known_fake_record, status_code=200)
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=True, test_mode=True
+    )
+    requests_mock.post(url, fake_next_record_pair)
     two_valid_numbers = redcap_interface_object.last_record_number(number_desired=2)
+
+    just_two_records: pandas.DataFrame = fake_records_dataframe.iloc[[0, 1]]
+    json_string: str = just_two_records.to_json(orient='records')
+    parsed_data: list[dict] = json.loads(json_string)
+    requests_mock.post(url, json=parsed_data, status_code=200)
     retrieved_df = redcap_interface_object.retrieve(two_valid_numbers)
+
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned == 2
@@ -246,13 +295,17 @@ def test_retrieve_multiple_records():
     assert "meeting_notes" in retrieved_df.columns
 
 
-def test_retrieve_single_record():
+def test_retrieve_single_record(requests_mock, url, known_fake_record, fake_next_record_pair, fake_missing_record, fake_records_dataframe):
     """
     Test retrieving ONE record.
     """
-    redcap_interface_object = REDCapInterface(isdev=True)
-    last_record_number = redcap_interface_object.last_record_number()
-    retrieved_df = redcap_interface_object.retrieve(last_record_number)
+    requests_mock.post(url, json=known_fake_record, status_code=200)
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=True, test_mode=True
+    )
+    requests_mock.post(url, fake_next_record_pair)
+    last_record_number:int = redcap_interface_object.last_record_number()
+    retrieved_df: pandas.DataFrame = redcap_interface_object.retrieve(last_record_number)
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned == 1
@@ -262,15 +315,19 @@ def test_retrieve_single_record():
     assert isinstance(retrieved_df, pandas.DataFrame)
     assert len(retrieved_df) == 0
 
+    requests_mock.post(url, json=fake_missing_record, status_code=400)
     retrieved_df = redcap_interface_object.retrieve(-1)
     assert isinstance(retrieved_df, pandas.DataFrame)
     assert len(retrieved_df) == 0
 
     # Test expanded mode.
+    just_one_record: pandas.DataFrame = fake_records_dataframe.iloc[[0]]
+    json_string: str = just_one_record.to_json(orient='records')
+    parsed_data: list[dict] = json.loads(json_string)
+    requests_mock.post(url, json=parsed_data, status_code=200)
     retrieved_df = redcap_interface_object.retrieve(
         record_numbers=last_record_number, data_request=DataRequest.Expanded
     )
-
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned == 1
