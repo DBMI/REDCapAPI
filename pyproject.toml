@@ -1,6 +1,6 @@
 [project]
 name = "redcapapi"
-version = "1.6.3"
+version = "1.6.4"
 description = "A Python wrapper around the REDCap API."
 license = {file = 'LICENSE'}
 readme = "README.md"
@@ -55,9 +55,9 @@ ignore_missing_imports = true
 disable_error_code = ["call-arg", "call-overload", "import", "var-annotated"]
 
 [tool.poetry]
-package-mode = false
+package-mode = true
 packages = [
-    { include = "redcapmatchresolver", from = "src" }
+    { include = "redcapapi", from = "src" }
 ]
 
 [tool.poetry.dependencies]
