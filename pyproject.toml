@@ -1,6 +1,6 @@
 [project]
 name = "redcapapi"
-version = "1.6.4"
+version = "1.6.5"
 description = "A Python wrapper around the REDCap API."
 license = {file = 'LICENSE'}
 readme = "README.md"
@@ -63,7 +63,7 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.11, <4.0"
 pandas = ">=2.2.0"
-redcaputilities = {git = "https://github.com/DBMI/REDCapUtilities.git"}
+redcaputilities = {git = "https://github.com/DBMI/REDCapUtilities.git", rev="main"}
 pillow = "^12.3.0"
 
 [tool.poetry.group.dev.dependencies]
