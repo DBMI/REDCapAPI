@@ -25,6 +25,18 @@ jobs:
       - name: Fail if .rej files exist as structure update was not successful
         run: test -z "$(find . -iname '*.rej')"
 
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # Required because your pre-commit config uses local 'poetry run' system hooks
+      - uses: ./.github/actions/python-poetry-env
+        with:
+          python-version: "3.11"
+      # Run pre-commit across all files in the repository
+      - name: Run pre-commit hooks
+        uses: pre-commit/action@v3.0.1
+        
   test:
     runs-on: ubuntu-latest
     strategy:
