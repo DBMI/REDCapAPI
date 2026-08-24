@@ -1,7 +1,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Pylint](./.github/badges/pylint-badge.svg?dummy=8484744)
 ![Coverage Status](./.github/badges/coverage-badge.svg?dummy=8484744)
-![Last Commit Date](./.github/badges/last-commit-badge.svg?dummy=8484744)
+![Last Commit Date](https://img.shields.io/github/last-commit/dbmi/REDCapAPI)
 
 [GitHub Pages site](https://dbmi.github.io/REDCapAPI/index.html)
 # How to use `REDCapInterface` class to connect with REDCap API
