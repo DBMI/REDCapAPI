@@ -1,7 +1,7 @@
-redcap_api
-==========
+redcapapi
+=========
 
 .. toctree::
    :maxdepth: 4
 
-   redcap_api
+   redcapapi

@@ -11,6 +11,7 @@ If extensions (or modules to document with autodoc) are in another directory,
 add these directories to sys.path here. If the directory is relative to the
 documentation root, use os.path.abspath to make it absolute, like shown here.
 """
+
 # pylint: disable=invalid-name
 # pylint: disable=redefined-builtin
 import os
@@ -26,11 +27,11 @@ html_logo = "../../pictures/REDCap.png"  # adds logo to documents pages.
 # -- Project information -----------------------------------------------------
 
 project = "REDCap API Interface"
-copyright = "2022, University of California San Diego"
+copyright = "2024, University of California San Diego"
 author = "DBMI Team"
 
 # The full version, including alpha/beta/rc tags
-release = "1.2.0"
+release = "1.5.6"
 
 
 # -- General configuration ---------------------------------------------------
