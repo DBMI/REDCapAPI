@@ -6,9 +6,9 @@ Classes
 -------
 TestREDCap
 """
+
 import pandas
 import pytest
-
 from helpers import (
     api_version_string,
     fake_record_dict,
@@ -234,13 +234,13 @@ def exercise_retrieve_single_record():
 
 
 if __name__ == "__main__":
-    #exercise_create_one_record()
-    #exercise_create_multiple_records()
-    #exercise_delete_record()
-    #exercise_exists()
-    #exercise_instantiate_object()
-    #exercise_last_record_number()
-    #exercise_next_record_number()
+    # exercise_create_one_record()
+    # exercise_create_multiple_records()
+    # exercise_delete_record()
+    # exercise_exists()
+    # exercise_instantiate_object()
+    # exercise_last_record_number()
+    # exercise_next_record_number()
     exercise_report()
     exercise_retrieve_all_records()
     exercise_retrieve_multiple_records()
