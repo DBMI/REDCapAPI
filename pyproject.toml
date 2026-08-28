@@ -89,6 +89,7 @@ sphinx = "*"
 sphinx_markdown_builder = "*"
 typing = "3.7.4.3"
 typing-extensions = "^4.16.0"
+usaddress = "*"
 wheel = "*"
 
 [tool.poetry.group.test.dependencies]
