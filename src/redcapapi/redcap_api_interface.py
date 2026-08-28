@@ -7,9 +7,8 @@ import json
 import math
 import os.path
 from enum import Enum
-from typing import List, Union
 
-import pandas  # type: ignore[import]
+import pandas
 import requests
 from redcaputilities.my_logging import setup_logging
 
@@ -60,7 +59,7 @@ class REDCapInterface:
 
         Assumes using production data, but can be created with isdev=True to
         point to the development database.
-        Gets database token from "F:\dbmi.data\redcap_refresh\config.key"
+        Gets database token from "F:\\dbmi.data\redcap_refresh\\config.key"
 
         Parameters
         ----------
@@ -71,7 +70,8 @@ class REDCapInterface:
             How long to wait (in seconds) for reponse (default: 10 sec)
 
         test_mode: bool, optional
-            If True, skips reading the config file because REDCap database keys not required in CI/CD tests.
+            If True, skips reading the config file
+            because REDCap database keys not required in CI/CD tests.
         Return
         -------
         none; Instantiates object
@@ -86,8 +86,8 @@ class REDCapInterface:
         """
         self.__log = setup_logging(log_filename="redcap_api.log")
         self.__log.info("REDCapInterface object instantiated.")
-        self.__api_uri: Union[str, None] = None
-        self.__capmc_token: Union[str, None] = None
+        self.__api_uri: str | None = None
+        self.__capmc_token: str | None = None
         self.__isdev = isdev
         self.__timeout_sec = timeout_sec
 
@@ -110,7 +110,7 @@ class REDCapInterface:
         self.__valid = True
 
     def create(
-        self, data_records: Union[dict, pandas.DataFrame], overwrite: bool = False
+        self, data_records: dict | pandas.DataFrame, overwrite: bool = False
     ) -> bool:
         """
         Insert new records into database.
@@ -192,7 +192,7 @@ class REDCapInterface:
 
     def __build_data_pull(
         self,
-        record_numbers: Union[list, None],
+        record_numbers: list | None,
         data_request: DataRequest = DataRequest.Standard,
     ) -> dict:
         """
@@ -431,8 +431,8 @@ class REDCapInterface:
         return first_name_ck and last_name_ck
 
     def last_record_number(
-        self, except_for: Union[int, list, None] = None, number_desired: int = 1
-    ) -> Union[int, list]:
+        self, except_for: int | list | None = None, number_desired: int = 1
+    ) -> int | list:
         """
         Lookup the highest record number (study_id) present in the database.
 
@@ -456,7 +456,7 @@ class REDCapInterface:
         >>> highest_record_number_in_use = redcap_interface_object.last_record_number()
         """
         last_valid_record_number = self.next_record_number() - 1
-        valid_record_numbers_found: List[int] = []
+        valid_record_numbers_found: list[int] = []
 
         if except_for is not None:
             if isinstance(except_for, int):
@@ -550,12 +550,12 @@ class REDCapInterface:
         self.__api_uri = config.get("API", "API_URL")
         self.__capmc_token = config.get("CAPMC", "CAPMC_TOKEN")
 
-    def report(self, report_id: Union[int, str]) -> pandas.DataFrame:
+    def report(self, report_id: int | str) -> pandas.DataFrame:
         """Pulls an existing report from REDCap.
 
         Parameters
         ----------
-        report_id : Union[int, str]
+        report_id : int | str
 
         Returns
         -------
@@ -598,7 +598,7 @@ class REDCapInterface:
 
     def retrieve(
         self,
-        record_numbers: Union[int, list, None] = None,
+        record_numbers: int | list | None = None,
         data_request: DataRequest = DataRequest.Standard,
     ) -> pandas.DataFrame:
         """

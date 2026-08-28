@@ -1,12 +1,12 @@
 """
 Module utilities. Provides place for needed static methods.
 """
+
 import re
 from datetime import datetime
-from typing import Union
 
 
-def convert_to_date(date_string: str) -> Union[datetime, None]:
+def convert_to_date(date_string: str) -> datetime | None:
     """
     Convert strings to datetime objects.
 
@@ -88,7 +88,8 @@ def convert_to_date(date_string: str) -> Union[datetime, None]:
         search_result = pattern.search(date_string)
 
         if search_result:
-            # First try creating datetime including hour:min:sec, which might not be present.
+            # First try creating datetime including
+            # hour:min:sec, which might not be present.
             try:
                 return datetime.strptime(
                     search_result.group("year")

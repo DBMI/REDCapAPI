@@ -1,6 +1,7 @@
 """
 Contains test fixtures available across BOTH test and exercise files.
 """
+
 import re
 from datetime import datetime
 
@@ -36,7 +37,7 @@ def fake_records_dataframe() -> pandas.DataFrame:
         phone_number = re.sub(r"x\d+", "", phone_number)
 
         record: dict = {
-            "study_id": fake.random_int(min = 1, max = 10000),
+            "study_id": fake.random_int(min=1, max=10000),
             "first_name": fake.first_name(),
             "last_name": fake.last_name(),
             "phone_number": phone_number,

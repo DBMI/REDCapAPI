@@ -6,13 +6,14 @@ Classes
 -------
 TestREDCap
 """
+
 import json
 from datetime import datetime
 
 import pandas
 import pytest
-
 from redcapapi import DataRequest, REDCapInterface
+
 from tests.utilities import convert_to_date
 
 
@@ -232,7 +233,7 @@ def test_report(requests_mock, url, known_fake_record, fake_records_dataframe):
         isdev=False, timeout_sec=240, test_mode=True
     )
 
-    json_string: str = fake_records_dataframe.to_json(orient='records')
+    json_string: str = fake_records_dataframe.to_json(orient="records")
     parsed_data: list[dict] = json.loads(json_string)
     requests_mock.post(url, json=parsed_data, status_code=200)
     retrieved_df: pandas.DataFrame = redcap_interface_object.report(report_id=1234)
@@ -242,7 +243,9 @@ def test_report(requests_mock, url, known_fake_record, fake_records_dataframe):
     assert "contact_1_date_time" in retrieved_df.columns
 
 
-def test_retrieve_all_records(requests_mock, url, known_fake_record, fake_records_dataframe):
+def test_retrieve_all_records(
+    requests_mock, url, known_fake_record, fake_records_dataframe
+):
     """
     Test retrieving ALL records.
     """
@@ -251,7 +254,7 @@ def test_retrieve_all_records(requests_mock, url, known_fake_record, fake_record
         isdev=False, timeout_sec=240, test_mode=True
     )
 
-    json_string: str = fake_records_dataframe.to_json(orient='records')
+    json_string: str = fake_records_dataframe.to_json(orient="records")
     parsed_data: list[dict] = json.loads(json_string)
     requests_mock.post(url, json=parsed_data, status_code=200)
     retrieved_df = redcap_interface_object.retrieve()
@@ -263,7 +266,9 @@ def test_retrieve_all_records(requests_mock, url, known_fake_record, fake_record
     # Bulk mode won't work in expanded mode--insufficient memory.
 
 
-def test_retrieve_multiple_records(requests_mock, url, known_fake_record, fake_next_record_pair, fake_records_dataframe):
+def test_retrieve_multiple_records(
+    requests_mock, url, known_fake_record, fake_next_record_pair, fake_records_dataframe
+):
     """
     Test retrieving SEVERAL records.
     """
@@ -275,7 +280,7 @@ def test_retrieve_multiple_records(requests_mock, url, known_fake_record, fake_n
     two_valid_numbers = redcap_interface_object.last_record_number(number_desired=2)
 
     just_two_records: pandas.DataFrame = fake_records_dataframe.iloc[[0, 1]]
-    json_string: str = just_two_records.to_json(orient='records')
+    json_string: str = just_two_records.to_json(orient="records")
     parsed_data: list[dict] = json.loads(json_string)
     requests_mock.post(url, json=parsed_data, status_code=200)
     retrieved_df = redcap_interface_object.retrieve(two_valid_numbers)
@@ -295,7 +300,14 @@ def test_retrieve_multiple_records(requests_mock, url, known_fake_record, fake_n
     assert "meeting_notes" in retrieved_df.columns
 
 
-def test_retrieve_single_record(requests_mock, url, known_fake_record, fake_next_record_pair, fake_missing_record, fake_records_dataframe):
+def test_retrieve_single_record(
+    requests_mock,
+    url,
+    known_fake_record,
+    fake_next_record_pair,
+    fake_missing_record,
+    fake_records_dataframe,
+):
     """
     Test retrieving ONE record.
     """
@@ -304,8 +316,10 @@ def test_retrieve_single_record(requests_mock, url, known_fake_record, fake_next
         isdev=True, test_mode=True
     )
     requests_mock.post(url, fake_next_record_pair)
-    last_record_number:int = redcap_interface_object.last_record_number()
-    retrieved_df: pandas.DataFrame = redcap_interface_object.retrieve(last_record_number)
+    last_record_number: int = redcap_interface_object.last_record_number()
+    retrieved_df: pandas.DataFrame = redcap_interface_object.retrieve(
+        last_record_number
+    )
     assert isinstance(retrieved_df, pandas.DataFrame)
     num_elements_returned: int = retrieved_df.shape[0]
     assert num_elements_returned == 1
@@ -322,7 +336,7 @@ def test_retrieve_single_record(requests_mock, url, known_fake_record, fake_next
 
     # Test expanded mode.
     just_one_record: pandas.DataFrame = fake_records_dataframe.iloc[[0]]
-    json_string: str = just_one_record.to_json(orient='records')
+    json_string: str = just_one_record.to_json(orient="records")
     parsed_data: list[dict] = json.loads(json_string)
     requests_mock.post(url, json=parsed_data, status_code=200)
     retrieved_df = redcap_interface_object.retrieve(
