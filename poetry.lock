@@ -1949,7 +1949,7 @@ pyyaml = "*"
 
 [[package]]
 name = "redcaputilities"
-version = "1.4.5"
+version = "1.4.6"
 description = "Allows code reuse by other Python projects."
 optional = false
 python-versions = ">=3.11, <4.0"
@@ -1967,8 +1967,8 @@ requests = ">=2.31.0"
 [package.source]
 type = "git"
 url = "https://github.com/DBMI/REDCapUtilities.git"
-reference = "main"
-resolved_reference = "557960f5d07df10dcaeb98170997eca48bd2eade"
+reference = "HEAD"
+resolved_reference = "e8065d26f57eae89d5b215ec55015dcbc0e1e2e6"
 
 [[package]]
 name = "requests"
@@ -2529,4 +2529,4 @@ packaging = ">=24.0"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11, <4.0"
-content-hash = "ab31282f6b1f8771d0c196c468004d7c0fc44e96e06ed7d66208a1bdbd963593"
+content-hash = "5e64fa0de4687492e702007b4a0e4816c45a991ca1c241e35f545a1b33562aec"
