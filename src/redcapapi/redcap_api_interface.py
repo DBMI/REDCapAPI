@@ -654,7 +654,13 @@ class REDCapInterface:
                 or response.status_code != 200
                 or "study_id" not in response.text
             ):
-                self.__log.info("No response in query for record %d.", record_numbers)
+                if record_numbers is None:
+                    self.__log.info("No response in query for all records.")
+                else:
+                    self.__log.info(
+                        "No response in query for record %d.", record_numbers
+                    )
+
                 return df
         except TypeError as error:  # pragma: no cover
             self.__log.exception("Unable to parse query response.")
