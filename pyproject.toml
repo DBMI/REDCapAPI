@@ -1,6 +1,6 @@
 [project]
 name = "redcapapi"
-version = "1.6.8"
+version = "1.7.0"
 description = "A Python wrapper around the REDCap API."
 license = {file = 'LICENSE'}
 readme = "README.md"

@@ -241,7 +241,7 @@ if __name__ == "__main__":
     # exercise_instantiate_object()
     # exercise_last_record_number()
     # exercise_next_record_number()
-    exercise_report()
+    # exercise_report()
     exercise_retrieve_all_records()
     exercise_retrieve_multiple_records()
     exercise_retrieve_single_record()
