@@ -15,8 +15,9 @@ from redcaputilities.my_logging import setup_logging
 
 class DataRequest(Enum):
     Expanded = 1
-    Standard = 2
-    Velos = 3
+    RecordsOnly = 2
+    Standard = 3
+    Velos = 4
 
 
 class REDCapInterface:
@@ -109,87 +110,6 @@ class REDCapInterface:
         # Lets all methods know that we're talking to the correct database.
         self.__valid = True
 
-    def create(
-        self, data_records: dict | pandas.DataFrame, overwrite: bool = False
-    ) -> bool:
-        """
-        Insert new records into database.
-
-        Parameters
-        ----------
-        data_records : dict, dataframe
-            Must contain the new study_id desired.
-        overwrite : bool
-            Overwrite data with nulls? Default: false
-
-        Return
-        ------
-        bool
-
-        Examples
-        --------
-        >>> from src.redcapapi import REDCapInterface
-        >>>
-        >>>
-        >>> redcap_interface_object = REDCapInterface()
-        >>> new_data = {
-        >>> 'study_id': '12345',
-        >>> 'name': "Patient's Name",
-        >>> 'mrn': '000000', ...}
-        >>> redcap_interface_object.create(new_data)
-        """
-        if not self.__valid:  # pragma: no cover
-            return False
-
-        if data_records is None:
-            return False
-
-        if isinstance(data_records, dict):
-            data_records_list = [data_records]
-        elif isinstance(data_records, pandas.DataFrame):
-            data_records_list = data_records.to_dict("records")
-        else:
-            return False
-
-        # Remove fields containing no info.
-        data_records_list = list(map(self.__discard_empty_fields, data_records_list))
-        next_study_id = self.next_record_number()
-
-        # Ensure 'study_id' is included.
-        for index, record in enumerate(data_records_list):
-            if "study_id" not in record:
-                record["study_id"] = next_study_id + index
-                data_records_list[index] = record
-
-        # JSONify
-        data = json.dumps(data_records_list)
-
-        fields: dict = {
-            "token": self.__capmc_token,
-            "content": "record",
-            "format": "json",
-            "type": "flat",
-            "data": data,
-        }
-
-        # Set overwrite behavior.
-        if overwrite:
-            fields["overwriteBehavior"] = "overwrite"
-
-        response = requests.post(
-            self.__api_uri, data=fields, timeout=self.__timeout_sec
-        )
-
-        if not isinstance(response, requests.Response):
-            self.__log.error("Unable to create records; no 'response' object.")
-            return False
-
-        if response.status_code != 200:
-            self.__log.error("Unable to create records because: '%s'.", response.text)
-            return False
-
-        return True
-
     def __build_data_pull(
         self,
         record_numbers: list | None,
@@ -270,6 +190,8 @@ class REDCapInterface:
             pull_dict["fields[2]"] = "entered_velos"
             pull_dict["fields[3]"] = "time_visit_ended"
             pull_dict["fields[4]"] = "type_of_draw"
+        elif data_request == DataRequest.RecordsOnly:
+            pull_dict["fields[0]"] = "study_id"
 
         if (
             record_numbers is not None
@@ -285,6 +207,87 @@ class REDCapInterface:
                 record_count += 1
 
         return pull_dict
+
+    def create(
+        self, data_records: dict | pandas.DataFrame, overwrite: bool = False
+    ) -> bool:
+        """
+        Insert new records into database.
+
+        Parameters
+        ----------
+        data_records : dict, dataframe
+            Must contain the new study_id desired.
+        overwrite : bool
+            Overwrite data with nulls? Default: false
+
+        Return
+        ------
+        bool
+
+        Examples
+        --------
+        >>> from src.redcapapi import REDCapInterface
+        >>>
+        >>>
+        >>> redcap_interface_object = REDCapInterface()
+        >>> new_data = {
+        >>> 'study_id': '12345',
+        >>> 'name': "Patient's Name",
+        >>> 'mrn': '000000', ...}
+        >>> redcap_interface_object.create(new_data)
+        """
+        if not self.__valid:  # pragma: no cover
+            return False
+
+        if data_records is None:
+            return False
+
+        if isinstance(data_records, dict):
+            data_records_list = [data_records]
+        elif isinstance(data_records, pandas.DataFrame):
+            data_records_list = data_records.to_dict("records")
+        else:
+            return False
+
+        # Remove fields containing no info.
+        data_records_list = list(map(self.__discard_empty_fields, data_records_list))
+        next_study_id = self.next_record_number()
+
+        # Ensure 'study_id' is included.
+        for index, record in enumerate(data_records_list):
+            if "study_id" not in record:
+                record["study_id"] = next_study_id + index
+                data_records_list[index] = record
+
+        # JSONify
+        data = json.dumps(data_records_list)
+
+        fields: dict = {
+            "token": self.__capmc_token,
+            "content": "record",
+            "format": "json",
+            "type": "flat",
+            "data": data,
+        }
+
+        # Set overwrite behavior.
+        if overwrite:
+            fields["overwriteBehavior"] = "overwrite"
+
+        response = requests.post(
+            self.__api_uri, data=fields, timeout=self.__timeout_sec
+        )
+
+        if not isinstance(response, requests.Response):
+            self.__log.error("Unable to create records; no 'response' object.")
+            return False
+
+        if response.status_code != 200:
+            self.__log.error("Unable to create records because: '%s'.", response.text)
+            return False
+
+        return True
 
     def delete(self, record_number: int) -> bool:
         """
@@ -486,6 +489,50 @@ class REDCapInterface:
 
         return valid_record_numbers_found
 
+    def pull_all_record_numbers(self) -> list[int]:
+        """
+        Get all the record numbers.
+
+        Return
+        ------
+        record_numbers: list[int]
+        """
+        record_numbers: list[int] = []
+        data_pull: dict = self.__build_data_pull(
+            data_request=DataRequest.RecordsOnly, record_numbers=[]
+        )
+
+        self.__log.info("Requesting REDCap record numbers.")
+        response = requests.post(
+            self.__api_uri, data=data_pull, verify=True, timeout=self.__timeout_sec
+        )
+
+        try:
+            if (
+                not response
+                or response.status_code != 200
+                or "study_id" not in response.text
+            ):
+                self.__log.info("No response in query for all record numbers.")
+
+                return record_numbers
+        except TypeError as error:  # pragma: no cover
+            self.__log.exception("Unable to parse query response.")
+            raise RuntimeError("Unable to parse query response.") from error
+
+        returned_data: dict = response.json()
+
+        try:
+            record_numbers = [int(d["study_id"]) for d in returned_data]
+        except KeyError as error:
+            self.__log.exception("'study_id' is missing from returned dictionary.")
+            raise RuntimeError(
+                "'study_id' is missing from returned dictionary."
+            ) from error
+
+        self.__log.info("Received %d record numbers.", len(record_numbers))
+        return record_numbers
+
     def next_record_number(self) -> int:
         """
         Lookup next available record number.
@@ -635,8 +682,24 @@ class REDCapInterface:
         """
         df = pandas.DataFrame()
 
-        # No need to check for self.__valid here; it's always OK to retrieve records.
-        if record_numbers is not None:
+        if record_numbers is None:
+            # Pulling ALL the records will cause an out-of-memory error on the server.
+            # So break up the request into chunks.
+            all_record_numbers: list[int] = self.pull_all_record_numbers()
+            chunk_size: int = 10000
+
+            for start_index in range(0, len(all_record_numbers), chunk_size):
+                end_index: int = start_index + chunk_size
+                selected_record_numbers: list[int] = all_record_numbers[
+                    start_index:end_index
+                ]
+                selected_df: pandas.DataFrame = self.retrieve(
+                    selected_record_numbers, data_request
+                )
+                df = pandas.concat([df, selected_df])
+
+            return df
+        else:
             if isinstance(record_numbers, int):
                 record_numbers = [record_numbers]
             elif not isinstance(record_numbers, list):
@@ -656,6 +719,11 @@ class REDCapInterface:
             ):
                 if record_numbers is None:
                     self.__log.info("No response in query for all records.")
+                elif isinstance(record_numbers, list):
+                    self.__log.info(
+                        "No response in query for list of %d records.",
+                        len(record_numbers),
+                    )
                 else:
                     self.__log.info(
                         "No response in query for record %d.", record_numbers

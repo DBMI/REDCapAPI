@@ -300,6 +300,26 @@ def test_retrieve_multiple_records(
     assert "meeting_notes" in retrieved_df.columns
 
 
+def test_retrieve_record_numbers(
+    requests_mock, url, known_fake_record, fake_record_numbers
+):
+    """
+    Test retrieving a list of available record numbers.
+    """
+    # Need to provide known_fake_record
+    # for when we instantiate REDCapInterface in DEV mode.
+    requests_mock.post(url, json=known_fake_record, status_code=200)
+    redcap_interface_object: REDCapInterface = REDCapInterface(
+        isdev=True, test_mode=True
+    )
+    requests_mock.post(url, json=fake_record_numbers, status_code=200)
+    retrieved_record_numbers: list[int] = (
+        redcap_interface_object.pull_all_record_numbers()
+    )
+    assert isinstance(retrieved_record_numbers, list)
+    assert retrieved_record_numbers == [int(d["study_id"]) for d in fake_record_numbers]
+
+
 def test_retrieve_single_record(
     requests_mock,
     url,

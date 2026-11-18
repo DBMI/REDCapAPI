@@ -86,6 +86,11 @@ def fixture_known_fake_record() -> dict:
     return {"study_id": "6393740", "first_name": "TESTER", "last_name": "TESTDATA"}
 
 
+@pytest.fixture(name="fake_record_numbers")
+def fixture_fake_record_numbers() -> list:
+    return [{"study_id": "1"}, {"study_id": "2"}, {"study_id": "3"}, {"study_id": "79"}]
+
+
 @pytest.fixture(name="url")
 def fixture_url() -> str:
     return r"https://redcap.ucsd.edu/api/"
